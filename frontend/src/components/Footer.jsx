@@ -198,7 +198,7 @@ function Footer() {
               <form onSubmit={handleSubscribe} className="newsletter-form-exact">
                 <div className="newsletter-row-exact">
                   <div className={`newsletter-input-box-exact ${status === "error" ? "has-error" : ""}`}>
-                    <Mail size={16} className="newsletter-mail-icon" />
+                    <Mail size={17} className="newsletter-mail-icon" />
                     <input
                       type="email"
                       value={email}
@@ -218,9 +218,9 @@ function Footer() {
                     disabled={status === "loading" || status === "success"}
                   >
                     {status === "loading" ? (
-                      <Loader2 size={16} className="spinner" />
+                      <Loader2 size={17} className="spinner" />
                     ) : status === "success" ? (
-                      <CheckCircle2 size={16} />
+                      <CheckCircle2 size={17} />
                     ) : (
                       "Subscribe"
                     )}
