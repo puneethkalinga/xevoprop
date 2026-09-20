@@ -6,19 +6,16 @@ import {
   BedDouble,
   Maximize,
   Heart,
-  SlidersHorizontal,
-  X,
   CheckCircle2,
-  ArrowUpDown,
   Home,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import "./Properties.css";
 import { properties as fallbackProperties } from "../data/properties";
 
 const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  "https://xevoprop.onrender.com/api";
+  import.meta.env.VITE_API_URL || "https://xevoprop.onrender.com/api";
 
 function Properties() {
   const [properties, setProperties] = useState([]);
@@ -35,22 +32,15 @@ function Properties() {
   const [readyOnly, setReadyOnly] = useState(false);
 
   const [sortBy, setSortBy] = useState("newest");
-  const [showFilters, setShowFilters] = useState(false);
-
   const [favorites, setFavorites] = useState(() => {
     try {
-      return JSON.parse(
-        localStorage.getItem("xevoprop_favorites") || "[]"
-      );
+      return JSON.parse(localStorage.getItem("xevoprop_favorites") || "[]");
     } catch {
       return [];
     }
   });
 
-  /* =====================================================
-     LOAD PROPERTIES
-  ===================================================== */
-
+  /* LOAD PROPERTIES */
   useEffect(() => {
     loadProperties();
   }, []);
@@ -71,271 +61,133 @@ function Properties() {
       } else {
         setProperties(fallbackProperties);
       }
-    } catch (error) {
-      console.warn("Using verified local portfolio cache:", error.message);
+    } catch (err) {
+      console.warn("Using verified local portfolio cache:", err.message);
       setProperties(fallbackProperties);
     } finally {
       setLoading(false);
     }
   };
 
-  /* =====================================================
-     FAVORITES
-  ===================================================== */
-
-  const toggleFavorite = async (event, propertyId) => {
+  /* FAVORITES */
+  const toggleFavorite = (event, propertyId) => {
     event.preventDefault();
     event.stopPropagation();
 
     const id = Number(propertyId);
+    setFavorites((prev) => {
+      const updated = prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id];
 
-    setFavorites((previous) => {
-      const exists = previous.includes(id);
-
-      const updated = exists
-        ? previous.filter(
-            (favoriteId) =>
-              favoriteId !== id
-          )
-        : [...previous, id];
-
-      localStorage.setItem(
-        "xevoprop_favorites",
-        JSON.stringify(updated)
-      );
-
+      try {
+        localStorage.setItem("xevoprop_favorites", JSON.stringify(updated));
+      } catch (err) {
+        console.error(err);
+      }
       return updated;
     });
 
-    const token =
-      localStorage.getItem("token");
-
+    const token = localStorage.getItem("token");
     if (!token) return;
 
-    try {
-      const isFavorite =
-        favorites.includes(id);
-
-      await fetch(
-        `${API_BASE}/favorites`,
-        {
-          method: isFavorite
-            ? "DELETE"
-            : "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-            Authorization:
-              `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            property_id: id,
-          }),
-        }
-      );
-    } catch (error) {
-      console.error(
-        "Favorite error:",
-        error
-      );
-    }
+    const isFav = favorites.includes(id);
+    fetch(`${API_BASE}/favorites`, {
+      method: isFav ? "DELETE" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ property_id: id }),
+    }).catch(() => {});
   };
 
-  /* =====================================================
-     PRICE FORMAT
-  ===================================================== */
-
+  /* PRICE FORMAT */
   const formatPrice = (property) => {
-    if (property.price) {
-      return property.price;
-    }
+    if (property.priceLabel) return property.priceLabel;
+    if (property.price && isNaN(property.price)) return property.price;
 
-    const value =
-      Number(property.price_value) || 0;
-
-    if (!value) {
-      return "Price on request";
-    }
+    const value = Number(property.price_value || property.price) || 0;
+    if (!value) return "Price on Request";
 
     if (value >= 10000000) {
-      return `₹${(
-        value / 10000000
-      ).toFixed(2)} Cr`;
+      return `₹${(value / 10000000).toFixed(2)} Cr`;
     }
-
     if (value >= 100000) {
-      return `₹${(
-        value / 100000
-      ).toFixed(1)} L`;
+      return `₹${(value / 100000).toFixed(1)} L`;
     }
-
-    return `₹${value.toLocaleString(
-      "en-IN"
-    )}`;
+    return `₹${value.toLocaleString("en-IN")}`;
   };
 
-  /* =====================================================
-     FILTER + SORT
-  ===================================================== */
-
+  /* FILTER + SORT */
   const filteredProperties = useMemo(() => {
-    const query =
-      search.trim().toLowerCase();
+    const query = search.trim().toLowerCase();
 
-    let result = properties.filter(
-      (property) => {
-        /* SEARCH */
+    let result = properties.filter((property) => {
+      /* SEARCH */
+      if (query) {
+        const text = [
+          property.title,
+          property.type,
+          property.location,
+          property.city,
+          property.state,
+          property.description,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-        if (query) {
-          const searchableText = [
-            property.title,
-            property.type,
-            property.location,
-            property.city,
-            property.state,
-            property.description,
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-
-          if (
-            !searchableText.includes(query)
-          ) {
-            return false;
-          }
-        }
-
-        /* PROPERTY TYPE */
-
-        if (
-          propertyType !== "all" &&
-          String(property.type)
-            .toLowerCase() !==
-            propertyType.toLowerCase()
-        ) {
-          return false;
-        }
-
-        /* BEDROOMS */
-
-        if (bedrooms !== "all") {
-          const propertyBedrooms =
-            Number(property.bedrooms) || 0;
-
-          if (
-            bedrooms === "4+" &&
-            propertyBedrooms < 4
-          ) {
-            return false;
-          }
-
-          if (
-            bedrooms !== "4+" &&
-            propertyBedrooms !==
-              Number(bedrooms)
-          ) {
-            return false;
-          }
-        }
-
-        /* PRICE */
-
-        const price =
-          Number(property.price_value);
-
-        if (
-          minPrice &&
-          (!price ||
-            price <
-              Number(minPrice))
-        ) {
-          return false;
-        }
-
-        if (
-          maxPrice &&
-          (!price ||
-            price >
-              Number(maxPrice))
-        ) {
-          return false;
-        }
-
-        /* AREA */
-
-        const area =
-          Number(property.area);
-
-        if (
-          minArea &&
-          (!area ||
-            area <
-              Number(minArea))
-        ) {
-          return false;
-        }
-
-        /* VERIFIED */
-
-        if (
-          verifiedOnly &&
-          !property.verified
-        ) {
-          return false;
-        }
-
-        /* READY TO MOVE */
-
-        if (
-          readyOnly &&
-          !property.ready_to_move
-        ) {
-          return false;
-        }
-
-        return true;
+        if (!text.includes(query)) return false;
       }
-    );
+
+      /* PROPERTY TYPE */
+      if (
+        propertyType !== "all" &&
+        String(property.type || "").toLowerCase() !== propertyType.toLowerCase()
+      ) {
+        return false;
+      }
+
+      /* BEDROOMS */
+      if (bedrooms !== "all") {
+        const bhk = Number(property.bedrooms) || 0;
+        if (bedrooms === "4+" && bhk < 4) return false;
+        if (bedrooms !== "4+" && bhk !== Number(bedrooms)) return false;
+      }
+
+      /* PRICE */
+      const priceVal = Number(property.price_value || property.price) || 0;
+      if (minPrice && (!priceVal || priceVal < Number(minPrice))) return false;
+      if (maxPrice && (!priceVal || priceVal > Number(maxPrice))) return false;
+
+      /* AREA */
+      const areaVal = Number(property.area) || 0;
+      if (minArea && (!areaVal || areaVal < Number(minArea))) return false;
+
+      /* VERIFIED ONLY */
+      if (verifiedOnly && !property.verified) return false;
+
+      /* READY TO MOVE */
+      if (readyOnly && !property.ready_to_move) return false;
+
+      return true;
+    });
 
     /* SORT */
+    result = [...result].sort((a, b) => {
+      const priceA = Number(a.price_value || a.price) || 0;
+      const priceB = Number(b.price_value || b.price) || 0;
 
-    result = [...result].sort(
-      (a, b) => {
-        if (sortBy === "price-low") {
-          return (
-            Number(a.price_value || 0) -
-            Number(b.price_value || 0)
-          );
-        }
+      if (sortBy === "price-low") return priceA - priceB;
+      if (sortBy === "price-high") return priceB - priceA;
+      if (sortBy === "area") return (Number(b.area) || 0) - (Number(a.area) || 0);
 
-        if (sortBy === "price-high") {
-          return (
-            Number(b.price_value || 0) -
-            Number(a.price_value || 0)
-          );
-        }
-
-        if (sortBy === "area") {
-          return (
-            Number(b.area || 0) -
-            Number(a.area || 0)
-          );
-        }
-
-        /* NEWEST */
-
-        const dateA = new Date(
-          a.created_at || 0
-        ).getTime();
-
-        const dateB = new Date(
-          b.created_at || 0
-        ).getTime();
-
-        return dateB - dateA;
-      }
-    );
+      // Default: newest
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateB - dateA;
+    });
 
     return result;
   }, [
@@ -351,10 +203,7 @@ function Properties() {
     sortBy,
   ]);
 
-  /* =====================================================
-     RESET FILTERS
-  ===================================================== */
-
+  /* RESET FILTERS */
   const resetFilters = () => {
     setSearch("");
     setPropertyType("all");
@@ -368,6 +217,7 @@ function Properties() {
   };
 
   const activeFilterCount = [
+    search.trim() !== "",
     propertyType !== "all",
     bedrooms !== "all",
     minPrice !== "",
@@ -377,608 +227,272 @@ function Properties() {
     readyOnly,
   ].filter(Boolean).length;
 
-  /* =====================================================
-     LOADING
-  ===================================================== */
-
-  if (loading) {
-    return (
-      <main className="properties-page">
-        <section className="properties-loading">
-          <div className="properties-loading-mark">
-            <Home size={22} />
-          </div>
-
-          <p>Finding properties...</p>
-        </section>
-      </main>
-    );
-  }
-
-  /* =====================================================
-     ERROR
-  ===================================================== */
-
-  if (error) {
-    return (
-      <main className="properties-page">
-        <section className="properties-error">
-          <div className="properties-error-icon">
-            <Home size={24} />
-          </div>
-
-          <h1>
-            We couldn't load the properties.
-          </h1>
-
-          <p>{error}</p>
-
-          <button
-            type="button"
-            onClick={loadProperties}
-            className="properties-retry"
-          >
-            Try again
-          </button>
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main className="properties-page">
-
-      {/* =================================================
-          HERO
-      ================================================= */}
-
+      {/* HERO SECTION */}
       <section className="properties-hero">
         <div className="properties-hero-inner">
-
           <div className="properties-hero-copy">
-            <span className="properties-eyebrow">
-              THE COLLECTION
-            </span>
-
+            <span className="properties-badge">The Collection</span>
             <h1>
               Find a place
               <br />
-              <em>worth coming home to.</em>
+              worth coming home to.
             </h1>
-
             <p>
-              Explore thoughtfully selected properties
-              across locations, budgets and lifestyles.
+              Explore thoughtfully selected properties across prime locations, verified
+              budgets, and institutional developer portfolios.
             </p>
           </div>
 
           <div className="properties-hero-count">
-            <strong>
-              {filteredProperties.length}
-            </strong>
-
-            <span>
-              properties
-              <br />
-              available
-            </span>
+            <strong>{filteredProperties.length}</strong>
+            <span>properties available</span>
           </div>
-
         </div>
       </section>
 
-      {/* =================================================
-          SEARCH
-      ================================================= */}
-
-      <section className="properties-discovery">
-        <div className="properties-discovery-inner">
-
-          <div className="properties-search-row">
-
-            <div className="properties-search">
-              <Search size={19} />
-
-              <input
-                type="text"
-                placeholder="Search by location, city, property type..."
-                value={search}
-                onChange={(event) =>
-                  setSearch(
-                    event.target.value
-                  )
-                }
-              />
-
-              {search && (
-                <button
-                  type="button"
-                  className="search-clear"
-                  onClick={() =>
-                    setSearch("")
-                  }
-                >
-                  <X size={17} />
+      {/* 2-COLUMN MARKETPLACE LAYOUT */}
+      <div className="properties-main">
+        <div className="properties-layout">
+          {/* LEFT FILTERS SIDEBAR */}
+          <aside className="filters-sidebar">
+            <div className="filters-header">
+              <h2>Filters</h2>
+              {activeFilterCount > 0 && (
+                <button type="button" onClick={resetFilters} className="clear-btn">
+                  Clear all ({activeFilterCount})
                 </button>
               )}
             </div>
 
-            <button
-              type="button"
-              className="filter-toggle"
-              onClick={() =>
-                setShowFilters(
-                  (previous) =>
-                    !previous
-                )
-              }
-            >
-              <SlidersHorizontal
-                size={17}
-              />
-
-              Filters
-
-              {activeFilterCount > 0 && (
-                <span>
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-
-          </div>
-
-          {/* =================================================
-              FILTER PANEL
-          ================================================= */}
-
-          <div
-            className={`properties-filter-panel ${
-              showFilters
-                ? "open"
-                : ""
-            }`}
-          >
-
+            {/* SEARCH */}
             <div className="filter-group">
-              <label>
-                PROPERTY TYPE
-              </label>
+              <label>Search Location</label>
+              <div className="search-input-wrap">
+                <Search size={15} />
+                <input
+                  type="text"
+                  placeholder="City, locality, project..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search properties"
+                />
+              </div>
+            </div>
 
+            {/* PROPERTY TYPE */}
+            <div className="filter-group">
+              <label>Property Type</label>
               <select
+                className="filter-select"
                 value={propertyType}
-                onChange={(event) =>
-                  setPropertyType(
-                    event.target.value
-                  )
-                }
+                onChange={(e) => setPropertyType(e.target.value)}
+                aria-label="Select property type"
               >
-                <option value="all">
-                  All types
-                </option>
-
-                <option value="Apartment">
-                  Apartment
-                </option>
-
-                <option value="Villa">
-                  Villa
-                </option>
-
-                <option value="House">
-                  House
-                </option>
-
-                <option value="Plot">
-                  Plot
-                </option>
-
-                <option value="Commercial">
-                  Commercial
-                </option>
+                <option value="all">All types</option>
+                <option value="apartment">Apartments & Flats</option>
+                <option value="villa">Luxury Villas</option>
+                <option value="house">Independent Houses</option>
+                <option value="plot">Residential Plots</option>
+                <option value="commercial">Commercial Spaces</option>
               </select>
             </div>
 
+            {/* BEDROOMS */}
             <div className="filter-group">
-              <label>
-                BEDROOMS
-              </label>
-
+              <label>Bedrooms (BHK)</label>
               <select
+                className="filter-select"
                 value={bedrooms}
-                onChange={(event) =>
-                  setBedrooms(
-                    event.target.value
-                  )
-                }
+                onChange={(e) => setBedrooms(e.target.value)}
+                aria-label="Select bedrooms"
               >
-                <option value="all">
-                  Any
-                </option>
-
-                <option value="1">
-                  1 BHK
-                </option>
-
-                <option value="2">
-                  2 BHK
-                </option>
-
-                <option value="3">
-                  3 BHK
-                </option>
-
-                <option value="4+">
-                  4+ BHK
-                </option>
+                <option value="all">Any BHK</option>
+                <option value="1">1 BHK</option>
+                <option value="2">2 BHK</option>
+                <option value="3">3 BHK</option>
+                <option value="4">4+ BHK</option>
               </select>
             </div>
 
+            {/* PRICE RANGE */}
             <div className="filter-group">
-              <label>
-                MIN PRICE
-              </label>
-
-              <input
-                type="number"
-                placeholder="₹ Minimum"
-                value={minPrice}
-                onChange={(event) =>
-                  setMinPrice(
-                    event.target.value
-                  )
-                }
-              />
+              <label>Price Range (₹)</label>
+              <div className="price-range-row">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  aria-label="Minimum price"
+                />
+                <span className="price-sep">–</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  aria-label="Maximum price"
+                />
+              </div>
             </div>
 
+            {/* MIN AREA */}
             <div className="filter-group">
-              <label>
-                MAX PRICE
-              </label>
-
+              <label>Min Area (Sq. Ft.)</label>
               <input
                 type="number"
-                placeholder="₹ Maximum"
-                value={maxPrice}
-                onChange={(event) =>
-                  setMaxPrice(
-                    event.target.value
-                  )
-                }
-              />
-            </div>
-
-            <div className="filter-group">
-              <label>
-                MIN AREA
-              </label>
-
-              <input
-                type="number"
-                placeholder="Sq. Ft."
+                placeholder="e.g. 1500"
                 value={minArea}
-                onChange={(event) =>
-                  setMinArea(
-                    event.target.value
-                  )
-                }
+                onChange={(e) => setMinArea(e.target.value)}
+                className="filter-select"
+                aria-label="Minimum area"
               />
             </div>
 
-            <div className="filter-checks">
+            {/* STATUS TOGGLES */}
+            <div className="filter-group">
+              <label>Status</label>
+              <label className="filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={verifiedOnly}
+                  onChange={(e) => setVerifiedOnly(e.target.checked)}
+                />
+                <span>RERA Verified Only</span>
+              </label>
 
-              <button
-                type="button"
-                className={
-                  verifiedOnly
-                    ? "filter-check active"
-                    : "filter-check"
-                }
-                onClick={() =>
-                  setVerifiedOnly(
-                    (previous) =>
-                      !previous
-                  )
-                }
-              >
-                <span>
-                  {verifiedOnly && (
-                    <CheckCircle2
-                      size={14}
-                    />
-                  )}
-                </span>
+              <label className="filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={readyOnly}
+                  onChange={(e) => setReadyOnly(e.target.checked)}
+                />
+                <span>Ready to Move</span>
+              </label>
+            </div>
+          </aside>
 
-                Verified
-              </button>
+          {/* RIGHT PROPERTIES CONTENT */}
+          <div className="properties-content">
+            {/* TOOLBAR */}
+            <div className="results-bar">
+              <div className="results-count">
+                Showing <strong>{filteredProperties.length}</strong> verified properties
+              </div>
 
-              <button
-                type="button"
-                className={
-                  readyOnly
-                    ? "filter-check active"
-                    : "filter-check"
-                }
-                onClick={() =>
-                  setReadyOnly(
-                    (previous) =>
-                      !previous
-                  )
-                }
-              >
-                <span>
-                  {readyOnly && (
-                    <CheckCircle2
-                      size={14}
-                    />
-                  )}
-                </span>
-
-                Ready to Move
-              </button>
-
+              <div className="results-sort-wrap">
+                <label>Sort by:</label>
+                <select
+                  className="sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  aria-label="Sort properties"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="area">Largest area</option>
+                </select>
+              </div>
             </div>
 
-            {activeFilterCount > 0 && (
-              <button
-                type="button"
-                className="clear-filters"
-                onClick={resetFilters}
-              >
-                Clear all filters
-              </button>
-            )}
+            {/* PROPERTIES CATALOG GRID */}
+            {loading ? (
+              <div className="properties-loading-card">
+                <p>Loading verified catalog...</p>
+              </div>
+            ) : filteredProperties.length === 0 ? (
+              <div className="properties-empty-state">
+                <Home size={36} />
+                <h3>No properties match your filters</h3>
+                <p>Try clearing filters or expanding your price and location range.</p>
+                <button type="button" onClick={resetFilters} className="empty-reset-btn">
+                  Reset all filters
+                </button>
+              </div>
+            ) : (
+              <div className="property-grid">
+                {filteredProperties.map((property) => {
+                  const id = Number(property.id);
+                  const isFav = favorites.includes(id);
 
-          </div>
-
-        </div>
-      </section>
-
-      {/* =================================================
-          RESULTS HEADER
-      ================================================= */}
-
-      <section className="properties-results">
-
-        <div className="properties-results-header">
-
-          <div>
-            <span className="results-label">
-              DISCOVER
-            </span>
-
-            <h2>
-              Properties for you
-            </h2>
-          </div>
-
-          <div className="properties-sort">
-            <ArrowUpDown size={16} />
-
-            <select
-              value={sortBy}
-              onChange={(event) =>
-                setSortBy(
-                  event.target.value
-                )
-              }
-            >
-              <option value="newest">
-                Newest first
-              </option>
-
-              <option value="price-low">
-                Price: Low to High
-              </option>
-
-              <option value="price-high">
-                Price: High to Low
-              </option>
-
-              <option value="area">
-                Largest area
-              </option>
-            </select>
-          </div>
-
-        </div>
-
-        {/* =================================================
-            PROPERTY GRID
-        ================================================= */}
-
-        {filteredProperties.length === 0 ? (
-          <div className="properties-empty">
-
-            <div className="properties-empty-icon">
-              <Search size={23} />
-            </div>
-
-            <h3>
-              No properties found
-            </h3>
-
-            <p>
-              Try adjusting your search or
-              removing some filters.
-            </p>
-
-            <button
-              type="button"
-              onClick={resetFilters}
-            >
-              Reset filters
-            </button>
-
-          </div>
-        ) : (
-          <div className="properties-grid">
-
-            {filteredProperties.map(
-              (property) => {
-
-                const propertyId =
-                  Number(property.id);
-
-                const isFavorite =
-                  favorites.includes(
-                    propertyId
-                  );
-
-                return (
-                  <Link
-                    key={property.id}
-                    to={`/properties/${property.id}`}
-                    className="property-card"
-                  >
-
-                    {/* IMAGE */}
-
-                    <div className="property-card-image">
-
-                      <img
-                        src={
-                          property.image ||
-                          "/property-placeholder.jpg"
-                        }
-                        alt={
-                          property.title ||
-                          "Property"
-                        }
-                        loading="lazy"
-                      />
-
-                      <div className="property-card-image-overlay" />
-
-                      {property.verified && (
-                        <span className="property-verified">
-                          <CheckCircle2
-                            size={13}
-                          />
-
-                          Verified
-                        </span>
-                      )}
-
-                      <button
-                        type="button"
-                        className={
-                          isFavorite
-                            ? "property-favorite active"
-                            : "property-favorite"
-                        }
-                        onClick={(event) =>
-                          toggleFavorite(
-                            event,
-                            property.id
-                          )
-                        }
-                        aria-label={
-                          isFavorite
-                            ? "Remove from favorites"
-                            : "Add to favorites"
-                        }
-                      >
-                        <Heart
-                          size={18}
-                          fill={
-                            isFavorite
-                              ? "currentColor"
-                              : "none"
-                          }
+                  return (
+                    <Link
+                      key={property.id}
+                      to={`/properties/${property.id}`}
+                      className="property-card"
+                    >
+                      {/* CARD MEDIA */}
+                      <div className="card-image-wrap">
+                        <img
+                          src={property.image || "/placeholder-property.jpg"}
+                          alt={property.title}
+                          loading="lazy"
                         />
-                      </button>
-
-                      {property.ready_to_move && (
-                        <span className="property-ready">
-                          Ready to move
-                        </span>
-                      )}
-
-                    </div>
-
-                    {/* CONTENT */}
-
-                    <div className="property-card-content">
-
-                      <div className="property-card-top">
-
-                        <span className="property-type">
-                          {property.type ||
-                            "Property"}
-                        </span>
-
-                        <span className="property-price">
-                          {formatPrice(
-                            property
+                        <div className="card-badges">
+                          {property.verified && (
+                            <span className="card-badge verified">
+                              <CheckCircle2 size={11} />
+                              RERA Verified
+                            </span>
                           )}
-                        </span>
+                          {property.ready_to_move && (
+                            <span className="card-badge ready">Ready to Move</span>
+                          )}
+                        </div>
 
+                        <button
+                          type="button"
+                          className={`card-favorite-btn ${isFav ? "active" : ""}`}
+                          onClick={(e) => toggleFavorite(e, property.id)}
+                          aria-label="Save property"
+                        >
+                          <Heart
+                            size={16}
+                            fill={isFav ? "#EF4444" : "none"}
+                            color={isFav ? "#EF4444" : "#FFFFFF"}
+                          />
+                        </button>
                       </div>
 
-                      <h3>
-                        {property.title ||
-                          "Untitled Property"}
-                      </h3>
+                      {/* CARD CONTENT */}
+                      <div className="card-body">
+                        <div className="card-price">{formatPrice(property)}</div>
+                        <h3 className="card-title">{property.title}</h3>
 
-                      <div className="property-location">
-                        <MapPin
-                          size={14}
-                        />
+                        <div className="card-location">
+                          <MapPin size={14} />
+                          <span>{property.location || property.city}</span>
+                        </div>
 
-                        <span>
-                          {property.location ||
-                            property.city ||
-                            "Location unavailable"}
-                        </span>
-                      </div>
-
-                      <div className="property-meta">
-
-                        {property.bedrooms !=
-                          null && (
-                          <span>
-                            <BedDouble
-                              size={15}
-                            />
-
-                            {property.bedrooms}
-                            {" "}
-                            Beds
+                        <div className="card-specs">
+                          {property.bedrooms && (
+                            <span className="card-spec-item">
+                              <BedDouble size={14} />
+                              {property.bedrooms} BHK
+                            </span>
+                          )}
+                          {property.area && (
+                            <span className="card-spec-item">
+                              <Maximize size={14} />
+                              {Number(property.area).toLocaleString("en-IN")} sq.ft
+                            </span>
+                          )}
+                          <span className="card-spec-item" style={{ marginLeft: "auto", color: "#1E40AF", fontWeight: 600 }}>
+                            Explore →
                           </span>
-                        )}
-
-                        {property.area !=
-                          null && (
-                          <span>
-                            <Maximize
-                              size={14}
-                            />
-
-                            {Number(
-                              property.area
-                            ).toLocaleString(
-                              "en-IN"
-                            )}
-                            {" "}
-                            sq.ft.
-                          </span>
-                        )}
-
+                        </div>
                       </div>
-
-                    </div>
-
-                  </Link>
-                );
-              }
+                    </Link>
+                  );
+                })}
+              </div>
             )}
-
           </div>
-        )}
-
-      </section>
-
+        </div>
+      </div>
     </main>
   );
 }
