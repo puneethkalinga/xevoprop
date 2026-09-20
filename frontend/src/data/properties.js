@@ -11,14 +11,12 @@ export const properties = [
     price: 12400000,
     price_value: 12400000,
     priceLabel: "₹1.24 Cr",
-    pricePerSqft: "₹5,688 / sq.ft",
     image:
-      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-160060768720-4e2a09cf159d?auto=format&fit=crop&w=900&q=80",
     verified: true,
     zeroBrokerage: true,
     readyToMove: true,
     ready_to_move: true,
-    reraId: "P02400001890",
   },
   {
     id: 2,
@@ -32,14 +30,12 @@ export const properties = [
     price: 28500000,
     price_value: 28500000,
     priceLabel: "₹2.85 Cr",
-    pricePerSqft: "₹8,260 / sq.ft",
     image:
       "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=80",
     verified: true,
     zeroBrokerage: true,
     readyToMove: false,
     ready_to_move: false,
-    reraId: "P02400002145",
   },
   {
     id: 3,
@@ -53,14 +49,12 @@ export const properties = [
     price: 7800000,
     price_value: 7800000,
     priceLabel: "₹78 L",
-    pricePerSqft: "₹5,492 / sq.ft",
     image:
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80",
     verified: true,
     zeroBrokerage: false,
     readyToMove: true,
     ready_to_move: true,
-    reraId: "P02400003712",
   },
   {
     id: 4,
@@ -74,14 +68,12 @@ export const properties = [
     price: 10500000,
     price_value: 10500000,
     priceLabel: "₹1.05 Cr",
-    pricePerSqft: "₹5,384 / sq.ft",
     image:
       "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=900&q=80",
     verified: true,
     zeroBrokerage: true,
     readyToMove: true,
     ready_to_move: true,
-    reraId: "P02400004561",
   },
   {
     id: 5,
@@ -95,14 +87,12 @@ export const properties = [
     price: 17200000,
     price_value: 17200000,
     priceLabel: "₹1.72 Cr",
-    pricePerSqft: "₹6,370 / sq.ft",
     image:
       "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80",
     verified: true,
     zeroBrokerage: false,
     readyToMove: true,
     ready_to_move: true,
-    reraId: "P02400005893",
   },
   {
     id: 6,
@@ -116,15 +106,14 @@ export const properties = [
     price: 32500000,
     price_value: 32500000,
     priceLabel: "₹3.25 Cr",
-    pricePerSqft: "₹8,552 / sq.ft",
     image:
       "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=900&q=80",
     verified: true,
     zeroBrokerage: true,
     readyToMove: false,
     ready_to_move: false,
-    reraId: "P02400006321",
   },
 ];
 
 export const FALLBACK_PROPERTIES = properties;
+export default properties;

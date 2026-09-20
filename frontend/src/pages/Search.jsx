@@ -152,8 +152,8 @@ export default function Search() {
           </h1>
 
           <p>
-            Explore vetted luxury residences, commercial suites, and prime plots.
-            Filter by live metro corridor, BHK format, and RERA approval.
+            Explore verified residential homes, villas, and commercial spaces.
+            Filter by city, property type, BHK layout, and budget.
           </p>
         </div>
       </section>
@@ -275,12 +275,11 @@ export default function Search() {
                     <div className="search-card-scrim" />
 
                     <div className="search-card-badges">
-                      <span className="chip-rera">
-                        <CheckCircle2 size={12} />
-                        RERA
-                      </span>
-                      {item.zeroBrokerage && (
-                        <span className="chip-zerobroker">0 Brokerage</span>
+                      {item.verified && (
+                        <span className="chip-verified">
+                          <CheckCircle2 size={12} />
+                          Verified
+                        </span>
                       )}
                     </div>
 
@@ -310,9 +309,6 @@ export default function Search() {
                       <span className="search-asset-pill">
                         {item.type || "Apartment"}
                       </span>
-                      {item.reraId && (
-                        <span className="search-rera-id">{item.reraId}</span>
-                      )}
                     </div>
 
                     <h3 className="search-card-title">{item.title}</h3>

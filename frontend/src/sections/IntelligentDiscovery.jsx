@@ -115,8 +115,8 @@ function IntelligentDiscovery() {
             <div className="discovery-point">
               <CheckCircle2 size={18} className="point-icon" />
               <div>
-                <strong>RERA Clean Title Guarantee</strong>
-                <span>All listed projects are cross-referenced with official state RERA records.</span>
+                <strong>Verified Listings</strong>
+                <span>All listed properties are cross-referenced for genuine details and transparent pricing.</span>
               </div>
             </div>
           </div>

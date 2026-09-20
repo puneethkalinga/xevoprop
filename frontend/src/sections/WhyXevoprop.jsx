@@ -15,28 +15,28 @@ const benefits = [
     number: "01",
     title: "Verified Properties",
     description:
-      "Every residence and commercial space is verified for RERA compliance, clean land titles, and builder authorizations.",
+      "Discover property listings with greater confidence through verified information and transparent details.",
   },
   {
     icon: MessageCircle,
     number: "02",
-    title: "Direct Builder Connections",
+    title: "Direct Connections",
     description:
-      "Connect directly with authorized developer representatives and property owners without unverified middlemen.",
+      "Connect with sellers, developers and property stakeholders without unnecessary layers in between.",
   },
   {
     icon: Compass,
     number: "03",
-    title: "Targeted Discovery",
+    title: "Intelligent Discovery",
     description:
-      "Locate the right properties faster with accurate corridor filtering based on commute, amenities, and budget.",
+      "Find relevant properties faster with smarter discovery based on your preferences and requirements.",
   },
   {
     icon: GitCompare,
     number: "04",
     title: "Confident Decisions",
     description:
-      "Evaluate verified pricing, unit specifications, and possession timelines to make well-informed investments.",
+      "Understand, compare and evaluate properties before taking the next step.",
   },
 ];
 

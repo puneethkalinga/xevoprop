@@ -360,7 +360,7 @@ function Properties() {
                   checked={verifiedOnly}
                   onChange={(e) => setVerifiedOnly(e.target.checked)}
                 />
-                <span>RERA Verified Only</span>
+                <span>Verified Only</span>
               </label>
 
               <label className="filter-checkbox">
@@ -435,7 +435,7 @@ function Properties() {
                           {property.verified && (
                             <span className="card-badge verified">
                               <CheckCircle2 size={11} />
-                              RERA Verified
+                              Verified
                             </span>
                           )}
                           {property.ready_to_move && (

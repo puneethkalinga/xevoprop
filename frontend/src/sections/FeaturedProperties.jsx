@@ -128,12 +128,11 @@ function FeaturedProperties() {
 
                   {/* TOP CHIPS */}
                   <div className="media-top-chips">
-                    <span className="media-badge verified">
-                      <CheckCircle2 size={12} />
-                      RERA Verified
-                    </span>
-                    {item.zeroBrokerage && (
-                      <span className="media-badge zero-fee">Zero Brokerage</span>
+                    {item.verified && (
+                      <span className="media-badge verified">
+                        <CheckCircle2 size={12} />
+                        Verified
+                      </span>
                     )}
                   </div>
 
@@ -160,9 +159,6 @@ function FeaturedProperties() {
                 <div className="card-body">
                   <div className="card-type-row">
                     <span className="card-asset-type">{item.type || "Apartment"}</span>
-                    {item.reraId && (
-                      <span className="card-rera-code">RERA: {item.reraId}</span>
-                    )}
                   </div>
 
                   <h3 className="card-title">{item.title}</h3>
@@ -192,25 +188,8 @@ function FeaturedProperties() {
 
                   {/* ACTION BAR */}
                   <div className="card-footer-action">
-                    <button
-                      type="button"
-                      className="card-quick-visit-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/properties/${item.id}`);
-                      }}
-                    >
-                      <Calendar size={13} />
-                      <span>Schedule Visit</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className="card-details-arrow"
-                      aria-label="View property details"
-                    >
-                      <ArrowUpRight size={16} />
-                    </button>
+                    <span className="card-details-text">View Details</span>
+                    <ArrowUpRight size={16} className="card-details-arrow-icon" />
                   </div>
                 </div>
               </motion.article>

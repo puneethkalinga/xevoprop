@@ -87,8 +87,8 @@ function Hero() {
           </h1>
 
           <p className="hero-subtitle">
-            Explore RERA-approved residential apartments, luxury villas, and commercial
-            developments from verified builders across Hyderabad, Bengaluru, and beyond.
+            Explore verified residential apartments, luxury villas, and commercial
+            developments from verified sellers across Hyderabad, Bengaluru, and beyond.
           </p>
         </div>
 
@@ -222,28 +222,21 @@ function Hero() {
         <div className="hero-trust-bar">
           <div className="trust-item">
             <CheckCircle size={16} className="trust-icon" />
-            <span>100% RERA Verified</span>
+            <span>Verified Properties</span>
           </div>
 
           <div className="trust-dot">•</div>
 
           <div className="trust-item">
             <CheckCircle size={16} className="trust-icon" />
-            <span>Direct Builder Pricing</span>
+            <span>Direct Connections</span>
           </div>
 
           <div className="trust-dot">•</div>
 
           <div className="trust-item">
             <CheckCircle size={16} className="trust-icon" />
-            <span>Zero Brokerage Markup</span>
-          </div>
-
-          <div className="trust-dot">•</div>
-
-          <div className="trust-item">
-            <Building size={16} className="trust-icon" />
-            <span>Top Tier Developers</span>
+            <span>Zero Brokerage*</span>
           </div>
         </div>
       </div>

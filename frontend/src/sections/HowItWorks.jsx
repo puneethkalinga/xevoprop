@@ -11,29 +11,29 @@ import "./HowItWorks.css";
 const steps = [
   {
     number: "01",
-    label: "DISCOVER",
-    title: "Find the right property.",
+    label: "FIND",
+    title: "Discover the right property.",
     description:
-      "Explore RERA-verified residential and commercial listings using transparent filters, real prices, and authentic photos.",
+      "Explore verified properties using meaningful filters, locations, and details that actually matter.",
     icon: Search,
     action: "/properties",
   },
   {
     number: "02",
     label: "CONNECT",
-    title: "Engage with authorized developers.",
+    title: "Meet the right people.",
     description:
-      "Connect directly with verified builders and owners to receive official brochures, floor plans, and schedules.",
+      "Connect directly with developers, sellers, and property stakeholders without unnecessary friction.",
     icon: MessageCircle,
     action: "/properties",
   },
   {
     number: "03",
-    label: "COMPLETE",
-    title: "Book visits and close with confidence.",
+    label: "MOVE FORWARD",
+    title: "Turn interest into action.",
     description:
-      "Schedule private site visits, review verified documentation, and complete your transaction with zero brokerage markup.",
-    icon: ShieldCheck,
+      "Send enquiries, schedule visits, and move confidently toward your next property decision.",
+    icon: ArrowUpRight,
     action: "/properties",
   },
 ];
