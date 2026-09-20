@@ -48,9 +48,9 @@
 
 .footer-brand-logo-link .brand-official-logo,
 .footer-brand-logo {
-  width: 145px;
-  height: auto;
-  max-height: 110px;
+  height: 52px;
+  width: auto;
+  max-width: 280px;
   object-fit: contain;
   display: block;
 }

@@ -91,7 +91,7 @@ function Footer() {
           <div className="footer-col-brand">
             <Link to="/" className="footer-brand-logo-link">
               <img
-                src="/xevoprop-logo.png"
+                src="/xevoprop-navbar-logo-white.png"
                 alt="XevopropTech Pvt Ltd"
                 className="footer-brand-logo"
               />
