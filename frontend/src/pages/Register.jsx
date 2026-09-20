@@ -317,7 +317,7 @@ function Register() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Sai Krishna"
+                placeholder="Puneeth"
                 required
               />
             </div>
@@ -353,7 +353,7 @@ function Register() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 98765 43210"
+                placeholder="+91 94821 73650"
                 required
               />
             </div>
