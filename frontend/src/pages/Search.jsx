@@ -268,9 +268,17 @@ export default function Search() {
                 >
                   <div className="search-card-media">
                     <img
-                      src={item.image || "/placeholder-property.jpg"}
+                      src={
+                        item.image ||
+                        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
+                      }
                       alt={item.title}
                       loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src =
+                          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80";
+                      }}
                     />
                     <div className="search-card-scrim" />
 

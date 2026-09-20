@@ -438,9 +438,16 @@ const submitVisit = async () => {
 
             <img
               src={
-                images[currentImage]
+                images[currentImage] ||
+                property.image ||
+                "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
               }
               alt={property.title}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src =
+                  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80";
+              }}
             />
 
             {property.verified && (
@@ -488,21 +495,28 @@ const submitVisit = async () => {
               (image, index) => (
                 <button
                   key={`${image}-${index}`}
+                  type="button"
                   className={
                     index ===
                     currentImage
-                      ? "thumbnail active"
-                      : "thumbnail"
+                      ? "gallery-thumb active"
+                      : "gallery-thumb"
                   }
                   onClick={() =>
                     setCurrentImage(
                       index
                     )
                   }
+                  aria-label={`View photo ${index + 1}`}
                 >
                   <img
                     src={image}
                     alt=""
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src =
+                        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80";
+                    }}
                   />
                 </button>
               )

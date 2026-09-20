@@ -146,14 +146,15 @@
 
 .gallery-thumbnails {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 4px 0 8px;
 }
 
-.gallery-thumb {
-  width: 110px;
-  height: 72px;
+.gallery-thumb,
+.thumbnail {
+  width: 120px;
+  height: 80px;
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid transparent;
@@ -161,18 +162,26 @@
   opacity: 0.7;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  padding: 0;
+  background: #F1F5F9;
+  display: block;
 }
 
 .gallery-thumb.active,
-.gallery-thumb:hover {
+.gallery-thumb:hover,
+.thumbnail.active,
+.thumbnail:hover {
   opacity: 1;
   border-color: #1E40AF;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.18);
 }
 
-.gallery-thumb img {
+.gallery-thumb img,
+.thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 /* =========================================================

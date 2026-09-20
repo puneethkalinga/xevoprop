@@ -12,7 +12,7 @@ export const properties = [
     price_value: 12400000,
     priceLabel: "₹1.24 Cr",
     image:
-      "https://images.unsplash.com/photo-160060768720-4e2a09cf159d?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80",
     verified: true,
     zeroBrokerage: true,
     readyToMove: true,

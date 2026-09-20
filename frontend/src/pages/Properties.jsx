@@ -427,9 +427,17 @@ function Properties() {
                       {/* CARD MEDIA */}
                       <div className="card-image-wrap">
                         <img
-                          src={property.image || "/placeholder-property.jpg"}
+                          src={
+                            property.image ||
+                            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
+                          }
                           alt={property.title}
                           loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src =
+                              "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80";
+                          }}
                         />
                         <div className="card-badges">
                           {property.verified && (
