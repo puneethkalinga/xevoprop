@@ -119,12 +119,12 @@ function Login() {
 
           {/* PASSWORD */}
           <div className="auth-field">
-            <label>
-              Password
-              <Link to="/contact" className="auth-field-hint" style={{ color: "#00D2FF" }}>
+            <div className="auth-label-row">
+              <label>Password</label>
+              <Link to="/contact" className="auth-field-hint">
                 Need help?
               </Link>
-            </label>
+            </div>
             <div className="auth-input-wrapper">
               <Lock size={16} className="auth-input-icon" />
               <input

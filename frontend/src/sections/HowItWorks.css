@@ -31,7 +31,7 @@
   color: #1E40AF;
   background: #EFF6FF;
   border: 1px solid #DBEAFE;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
@@ -56,7 +56,7 @@
 .how-header p {
   color: #64748B;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   margin: 0;
 }
 
@@ -74,8 +74,9 @@
   padding: 32px 28px;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  position: relative;
+  cursor: pointer;
 }
 
 .how-step-card:hover {
@@ -92,44 +93,53 @@
   margin-bottom: 24px;
 }
 
-.how-step-num {
+.how-step-number {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  color: #CBD5E1;
+  color: #94A3B8;
+}
+
+.how-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #1E40AF;
+  text-transform: uppercase;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  padding: 3px 10px;
+  border-radius: 4px;
 }
 
 .how-step-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: #EFF6FF;
-  border: 1px solid #DBEAFE;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #1E40AF;
 }
 
-.how-step-tag {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #1E40AF;
-  margin-bottom: 8px;
+.how-step-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
-.how-step-card h3 {
-  font-size: 19px;
+.how-step-content h3 {
+  font-size: 18px;
   font-weight: 700;
   color: #0F172A;
   margin: 0 0 10px;
   line-height: 1.35;
 }
 
-.how-step-card p {
-  font-size: 14px;
+.how-step-content p {
+  font-size: 13.5px;
   color: #64748B;
   line-height: 1.6;
   margin: 0 0 24px;
@@ -143,20 +153,49 @@
   color: #1E40AF;
   font-size: 13px;
   font-weight: 600;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
   transition: gap 0.15s ease;
 }
 
-.how-step-link:hover {
+.how-step-card:hover .how-step-link {
   gap: 10px;
   color: #1D4ED8;
+}
+
+/* BOTTOM STATEMENT BANNER */
+.how-bottom-banner {
+  margin-top: 48px;
+  padding: 24px 32px;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.how-bottom-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1E40AF;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.how-bottom-banner strong {
+  font-size: 15px;
+  color: #0F172A;
+  font-weight: 600;
 }
 
 @media (max-width: 900px) {
   .how-steps {
     grid-template-columns: 1fr;
+  }
+  .how-bottom-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
   }
 }

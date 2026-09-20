@@ -71,29 +71,28 @@ function ForDevelopers() {
         </motion.div>
 
         {/* RIGHT FEATURES */}
-        <div className="developers-features">
+        <div className="developers-cards">
           {features.map((feature, index) => {
             const Icon = feature.icon;
 
             return (
               <motion.div
-                className="developer-feature"
+                className="developer-feature-card"
                 key={feature.title}
-                initial={{ opacity: 0, y: 25 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{
-                  duration: 0.5,
+                  duration: 0.4,
                   delay: index * 0.1,
                 }}
               >
                 <div className="developer-feature-icon">
-                  <Icon size={21} />
+                  <Icon size={20} />
                 </div>
 
-                <div>
+                <div className="developer-feature-text">
                   <h3>{feature.title}</h3>
-
                   <p>{feature.description}</p>
                 </div>
               </motion.div>

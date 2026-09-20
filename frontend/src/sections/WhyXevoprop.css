@@ -1,6 +1,5 @@
 /* =========================================================
    XEVOPROP — PURE, PLAIN & PROFESSIONAL WHY XEVOPROP
-   Clean, institutional trust factors
    ========================================================= */
 
 .why-section {
@@ -28,6 +27,10 @@
   flex-wrap: wrap;
 }
 
+.why-header-left {
+  max-width: 600px;
+}
+
 .why-label {
   display: inline-flex;
   align-items: center;
@@ -36,7 +39,7 @@
   color: #1E40AF;
   background: #EFF6FF;
   border: 1px solid #DBEAFE;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
@@ -58,12 +61,12 @@
   color: #1E40AF;
 }
 
-.why-header > p {
-  max-width: 460px;
+.why-header-desc {
+  max-width: 480px;
   margin: 0;
   color: #64748B;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 /* GRID */
@@ -81,6 +84,7 @@
   padding: 28px 24px;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -98,17 +102,17 @@
   margin-bottom: 20px;
 }
 
-.why-number {
+.why-card-num {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  color: #CBD5E1;
+  color: #94A3B8;
 }
 
-.why-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+.why-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   background: #EFF6FF;
   border: 1px solid #DBEAFE;
   display: flex;
@@ -118,22 +122,86 @@
 }
 
 .why-card h3 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #0F172A;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
+  line-height: 1.35;
 }
 
 .why-card p {
-  font-size: 14px;
+  font-size: 13.5px;
   color: #64748B;
   line-height: 1.6;
   margin: 0;
 }
 
+/* CTA BANNER */
+.why-cta-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 48px;
+  padding: 24px 32px;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  flex-wrap: wrap;
+}
+
+.why-cta-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.why-cta-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1E40AF;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.why-cta-text strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.why-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: #1E40AF;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.why-cta-btn:hover {
+  background: #1D4ED8;
+}
+
 @media (max-width: 1024px) {
   .why-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .why-cta-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
   }
 }
 

@@ -127,36 +127,25 @@ function PropertyCategories() {
                 }}
               >
 
-                <div className="category-top">
-
-                  <div className="category-icon">
+                <div className="category-top-row">
+                  <div className="category-icon-box">
                     <Icon size={22} />
                   </div>
 
                   <ArrowUpRight
-                    className="category-arrow"
+                    className="category-arrow-icon"
                     size={19}
                   />
-
                 </div>
 
                 <div className="category-content">
-
-                  <h3>
-                    {category.title}
-                  </h3>
-
-                  <p>
-                    {category.description}
-                  </p>
-
+                  <h3>{category.title}</h3>
+                  <p>{category.description}</p>
                 </div>
 
-                <span className="category-count">
+                <span className="category-count-badge">
                   {category.count} properties
                 </span>
-
-                <div className="category-line"></div>
 
               </motion.button>
             );

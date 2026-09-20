@@ -308,7 +308,9 @@ function Register() {
         <form className="auth-form" onSubmit={handleInitiateRegister}>
           {/* FULL NAME */}
           <div className="auth-field">
-            <label>Legal Full Name</label>
+            <div className="auth-label-row">
+              <label>Legal Full Name</label>
+            </div>
             <div className="auth-input-wrapper">
               <User size={16} className="auth-input-icon" />
               <input
@@ -323,10 +325,10 @@ function Register() {
 
           {/* EMAIL */}
           <div className="auth-field">
-            <label>
-              Work or Personal Email
+            <div className="auth-label-row">
+              <label>Work or Personal Email</label>
               <span className="auth-field-hint">Spam-protected</span>
-            </label>
+            </div>
             <div className="auth-input-wrapper">
               <Mail size={16} className="auth-input-icon" />
               <input
@@ -341,10 +343,10 @@ function Register() {
 
           {/* MOBILE PHONE */}
           <div className="auth-field">
-            <label>
-              Mobile Number
+            <div className="auth-label-row">
+              <label>Mobile Number</label>
               <span className="auth-field-hint">Receives OTP</span>
-            </label>
+            </div>
             <div className="auth-input-wrapper">
               <Phone size={16} className="auth-input-icon" />
               <input
@@ -359,7 +361,10 @@ function Register() {
 
           {/* PASSWORD */}
           <div className="auth-field">
-            <label>Password</label>
+            <div className="auth-label-row">
+              <label>Password</label>
+              <span className="auth-field-hint">Min 6 characters</span>
+            </div>
             <div className="auth-input-wrapper">
               <Lock size={16} className="auth-input-icon" />
               <input
