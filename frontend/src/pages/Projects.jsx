@@ -10,8 +10,6 @@ import {
 import { Link } from "react-router-dom";
 import "./Projects.css";
 
-import { FALLBACK_PROJECTS } from "../data/projects";
-
 const API_URL =
   import.meta.env.VITE_API_URL || "https://xevoprop.onrender.com/api";
 
@@ -54,14 +52,10 @@ function Projects() {
         ? data
         : data.projects || [];
 
-      if (projectList.length > 0) {
-        setProjects(projectList);
-      } else {
-        setProjects(FALLBACK_PROJECTS);
-      }
+      setProjects(projectList);
     } catch (err) {
-      console.warn("PUBLIC PROJECTS FALLBACK ACTIVE:", err.message);
-      setProjects(FALLBACK_PROJECTS);
+      console.warn("PUBLIC PROJECTS FETCH ERROR:", err.message);
+      setProjects([]);
     } finally {
       setLoading(false);
     }
