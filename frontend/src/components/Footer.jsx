@@ -3,18 +3,14 @@ import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
   Mail,
+  Globe,
   CheckCircle2,
   AlertCircle,
   Loader2,
-  ShieldCheck,
-  Building,
-  Sparkles,
 } from "lucide-react";
 
-import { LogoWordmark } from "./Logo";
 import {
   LinkedInIcon,
-  InstagramIcon,
   FacebookIcon,
   YoutubeIcon,
 } from "./SocialIcons";
@@ -33,7 +29,7 @@ function Footer() {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!trimmed || !emailRegex.test(trimmed)) {
       setStatus("error");
-      setFeedback("Please provide a valid business or personal email address.");
+      setFeedback("Please enter a valid email address.");
       return;
     }
 
@@ -51,14 +47,14 @@ function Footer() {
     const domain = trimmed.split("@")[1]?.toLowerCase();
     if (disposableDomains.includes(domain)) {
       setStatus("error");
-      setFeedback("Disposable email addresses are not accepted for market reports.");
+      setFeedback("Disposable email addresses are not accepted.");
       return;
     }
 
     setStatus("loading");
     setFeedback("");
 
-    // Simulate reliable dispatch & store subscriber
+    // Store subscriber reliably
     setTimeout(() => {
       try {
         const stored = JSON.parse(localStorage.getItem("xevoprop_subscribers") || "[]");
@@ -67,86 +63,66 @@ function Footer() {
           localStorage.setItem("xevoprop_subscribers", JSON.stringify(stored));
         }
         setStatus("success");
-        setFeedback("Subscribed! You will receive verified weekly market updates & luxury alerts.");
+        setFeedback("Subscribed! Thank you for joining our newsletter.");
         setEmail("");
       } catch {
         setStatus("success");
         setFeedback("Subscribed successfully!");
         setEmail("");
       }
-    }, 700);
+    }, 600);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   return (
-    <footer className="footer-v2">
-      <div className="footer-v2-glow"></div>
-
-      <div className="footer-v2-container">
-        {/* TRUST BADGE STRIP */}
-        <div className="footer-v2-trust-strip">
-          <div className="trust-item">
-            <ShieldCheck size={18} className="trust-icon" />
-            <span>100% Verified Properties & RERA Compliance</span>
-          </div>
-          <div className="trust-divider"></div>
-          <div className="trust-item">
-            <Building size={18} className="trust-icon" />
-            <span>Direct Builder & Owner Connections (Zero Brokerage)</span>
-          </div>
-          <div className="trust-divider"></div>
-          <div className="trust-item">
-            <Sparkles size={18} className="trust-icon" />
-            <span>Powered by Xevotech Intelligent Systems</span>
-          </div>
-        </div>
-
-        {/* MAIN FOOTER */}
-        <div className="footer-v2-main">
-          {/* BRAND COLUMN */}
-          <div className="footer-v2-brand">
-            <Link to="/" className="footer-v2-logo-link">
-              <LogoWordmark size="default" />
+    <footer className="footer-exact">
+      <div className="footer-exact-container">
+        {/* 5-COLUMN MAIN GRID */}
+        <div className="footer-exact-grid">
+          {/* COLUMN 1: BRAND */}
+          <div className="footer-col-brand">
+            <Link to="/" className="footer-brand-logo-link">
+              <img
+                src="/xevoprop-logo.png"
+                alt="XevopropTech Pvt Ltd"
+                className="footer-brand-logo"
+              />
             </Link>
 
-            <p className="footer-v2-desc">
-              India's premier transparent PropTech ecosystem. Connecting buyers,
-              verified developers, and institutional property owners with genuine
-              data, zero brokerage, and direct digital transactions.
+            <p className="footer-brand-desc">
+              Your trusted partner in real estate. Discover premium properties,
+              connect with verified developers, and build a brighter future with
+              XevopropTech.
             </p>
 
-            {/* OFFICIAL SOCIALS */}
-            <div className="footer-v2-socials">
+            {/* SOCIAL TILES */}
+            <div className="footer-social-tiles">
               <a
                 href="https://www.linkedin.com/company/xevotech/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="footer-v2-social-btn"
                 title="Follow Xevotech on LinkedIn"
+                className="social-tile"
               >
-                <LinkedInIcon size={16} />
+                <LinkedInIcon size={15} />
               </a>
 
               <a
-                href="https://www.instagram.com/xevotech/"
+                href="https://xevotech.in/"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="footer-v2-social-btn"
-                title="Follow Xevotech on Instagram"
+                aria-label="Website"
+                title="Visit Xevotech Website"
+                className="social-tile"
               >
-                <InstagramIcon size={16} />
-              </a>
-
-              <a
-                href="https://www.facebook.com/xevotech/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="footer-v2-social-btn"
-                title="Follow Xevotech on Facebook"
-              >
-                <FacebookIcon size={16} />
+                <Globe size={15} />
               </a>
 
               <a
@@ -154,122 +130,136 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"
-                className="footer-v2-social-btn"
                 title="Watch on YouTube"
+                className="social-tile"
               >
-                <YoutubeIcon size={16} />
+                <YoutubeIcon size={15} />
+              </a>
+
+              <a
+                href="https://www.facebook.com/xevotech/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                title="Follow Xevotech on Facebook"
+                className="social-tile"
+              >
+                <FacebookIcon size={15} />
               </a>
             </div>
           </div>
 
-          {/* EXPLORE COLUMN */}
-          <div className="footer-v2-col">
-            <h4 className="footer-v2-heading">Explore</h4>
-            <ul className="footer-v2-links">
-              <li><Link to="/properties">All Properties</Link></li>
-              <li><Link to="/properties?type=residential">Residential Flats</Link></li>
-              <li><Link to="/properties?type=villa">Luxury Villas</Link></li>
-              <li><Link to="/properties?type=commercial">Commercial Spaces</Link></li>
-              <li><Link to="/projects">New Launch Projects</Link></li>
-              <li><Link to="/developers">Verified Developers</Link></li>
+          {/* COLUMN 2: QUICK LINKS */}
+          <div className="footer-col-links">
+            <h4 className="footer-col-title">Quick Links</h4>
+            <ul className="footer-link-list">
+              <li><Link to="/">Home</Link></li>
+              <li><Link to="/properties">Properties</Link></li>
+              <li><Link to="/projects">Projects</Link></li>
+              <li><Link to="/about">About</Link></li>
+              <li><Link to="/contact">Contact</Link></li>
             </ul>
           </div>
 
-          {/* HUBS & CITIES */}
-          <div className="footer-v2-col">
-            <h4 className="footer-v2-heading">Prime Hubs</h4>
-            <ul className="footer-v2-links">
-              <li><Link to="/search?city=Hyderabad&location=Financial+District">Financial District</Link></li>
-              <li><Link to="/search?city=Hyderabad&location=Hitec+City">Hitec City & Madhapur</Link></li>
-              <li><Link to="/search?city=Hyderabad&location=Jubilee+Hills">Jubilee & Banjara Hills</Link></li>
-              <li><Link to="/search?city=Hyderabad&location=Gachibowli">Gachibowli & Kokapet</Link></li>
-              <li><Link to="/search?city=Bengaluru&location=Whitefield">Bengaluru Whitefield</Link></li>
-              <li><Link to="/search?city=Bengaluru&location=Indiranagar">Indiranagar Prime</Link></li>
+          {/* COLUMN 3: PROPERTY TYPES */}
+          <div className="footer-col-links">
+            <h4 className="footer-col-title">Property Types</h4>
+            <ul className="footer-link-list">
+              <li><Link to="/properties?type=residential">Residential</Link></li>
+              <li><Link to="/properties?type=commercial">Commercial</Link></li>
+              <li><Link to="/properties?type=plot">Plots</Link></li>
+              <li><Link to="/properties?type=villa">Villas</Link></li>
+              <li><Link to="/properties?type=apartment">Apartments</Link></li>
             </ul>
           </div>
 
-          {/* COMPANY & TRUST */}
-          <div className="footer-v2-col">
-            <h4 className="footer-v2-heading">Company</h4>
-            <ul className="footer-v2-links">
-              <li><Link to="/about">About Xevotech</Link></li>
-              <li><Link to="/contact">Contact & Support</Link></li>
-              <li><a href="https://www.linkedin.com/company/xevotech/" target="_blank" rel="noopener noreferrer">Careers at Xevotech <ArrowUpRight size={12} className="inline-arrow" /></a></li>
-              <li><Link to="/about#security">Trust & Security</Link></li>
-              <li><Link to="/terms">Terms of Service</Link></li>
-              <li><Link to="/privacy">Privacy Policy</Link></li>
+          {/* COLUMN 4: SUPPORT */}
+          <div className="footer-col-links">
+            <h4 className="footer-col-title">Support</h4>
+            <ul className="footer-link-list">
+              <li><Link to="/contact">Help Center</Link></li>
+              <li><Link to="/contact#terms">Terms & Conditions</Link></li>
+              <li><Link to="/contact#privacy">Privacy Policy</Link></li>
+              <li><Link to="/contact#faq">FAQ</Link></li>
+              <li><Link to="/contact">Contact Us</Link></li>
             </ul>
           </div>
 
-          {/* WORKING NEWSLETTER */}
-          <div className="footer-v2-newsletter-col">
-            <h4 className="footer-v2-heading">PropTech Insights</h4>
-            <p className="footer-v2-subtext">
-              Curated market intelligence, price trends, and off-market investment alerts delivered weekly.
-            </p>
+          {/* COLUMN 5: NEWSLETTER CARD */}
+          <div className="footer-col-newsletter">
+            <div className="newsletter-card-exact">
+              <h3 className="newsletter-title">Subscribe to our Newsletter</h3>
+              <p className="newsletter-subtitle">
+                Get the latest property updates and investment opportunities.
+              </p>
 
-            <form className="footer-v2-form" onSubmit={handleSubscribe}>
-              <div className={`footer-v2-input-box ${status === "error" ? "has-error" : ""}`}>
-                <Mail size={16} className="input-icon" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (status !== "idle") setStatus("idle");
-                  }}
-                  placeholder="name@company.com"
-                  aria-label="Email address for newsletter"
-                  disabled={status === "loading" || status === "success"}
-                />
-                <button
-                  type="submit"
-                  className="footer-v2-submit-btn"
-                  disabled={status === "loading" || status === "success"}
-                >
-                  {status === "loading" ? (
-                    <Loader2 size={16} className="spinner" />
-                  ) : status === "success" ? (
-                    <CheckCircle2 size={16} />
-                  ) : (
-                    "Subscribe"
-                  )}
-                </button>
-              </div>
+              <form onSubmit={handleSubscribe} className="newsletter-form-exact">
+                <div className="newsletter-row-exact">
+                  <div className={`newsletter-input-box-exact ${status === "error" ? "has-error" : ""}`}>
+                    <Mail size={16} className="newsletter-mail-icon" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (status !== "idle") setStatus("idle");
+                      }}
+                      placeholder="Enter your email"
+                      disabled={status === "loading" || status === "success"}
+                      aria-label="Enter your email address"
+                    />
+                  </div>
 
-              {/* FEEDBACK STATUS */}
-              {status === "error" && (
-                <div className="footer-feedback error">
-                  <AlertCircle size={14} />
-                  <span>{feedback}</span>
+                  <button
+                    type="submit"
+                    className="newsletter-submit-btn-exact"
+                    disabled={status === "loading" || status === "success"}
+                  >
+                    {status === "loading" ? (
+                      <Loader2 size={16} className="spinner" />
+                    ) : status === "success" ? (
+                      <CheckCircle2 size={16} />
+                    ) : (
+                      "Subscribe"
+                    )}
+                  </button>
                 </div>
-              )}
-              {status === "success" && (
-                <div className="footer-feedback success">
-                  <CheckCircle2 size={14} />
-                  <span>{feedback}</span>
-                </div>
-              )}
-            </form>
+
+                {/* FEEDBACK MESSAGES */}
+                {status === "error" && (
+                  <div className="newsletter-feedback error">
+                    <AlertCircle size={14} style={{ flexShrink: 0 }} />
+                    <span>{feedback}</span>
+                  </div>
+                )}
+                {status === "success" && (
+                  <div className="newsletter-feedback success">
+                    <CheckCircle2 size={14} style={{ flexShrink: 0 }} />
+                    <span>{feedback}</span>
+                  </div>
+                )}
+              </form>
+            </div>
           </div>
         </div>
 
-        {/* BOTTOM COPYRIGHT */}
-        <div className="footer-v2-bottom">
-          <div className="footer-v2-bottom-left">
-            <span>© {new Date().getFullYear()} Xevoprop. A proud subsidiary of <strong>Xevotech Technologies Pvt Ltd</strong>.</span>
+        {/* BOTTOM COPYRIGHT ROW */}
+        <div className="footer-bottom-exact">
+          <div className="footer-bottom-copy">
+            © {new Date().getFullYear()} XevopropTech Pvt Ltd. All rights reserved.
           </div>
 
-          <div className="footer-v2-bottom-right">
-            <Link to="/privacy">Privacy Notice</Link>
-            <span className="dot">•</span>
-            <Link to="/terms">RERA Disclosures</Link>
-            <span className="dot">•</span>
-            <Link to="/contact">Grievance Officer</Link>
-            <span className="dot">•</span>
-            <a href="#top" className="back-to-top">
-              Back to top <ArrowUpRight size={13} />
-            </a>
+          <div className="footer-bottom-actions">
+            <Link to="/contact#privacy">Privacy</Link>
+            <Link to="/contact">Contact</Link>
+            <button
+              type="button"
+              onClick={scrollToTop}
+              className="footer-back-to-top"
+            >
+              <span>Back to top</span>
+              <ArrowUpRight size={14} />
+            </button>
           </div>
         </div>
       </div>
