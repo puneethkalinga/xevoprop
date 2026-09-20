@@ -29,7 +29,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
 
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 50 * 1024 * 1024,
   },
 
   fileFilter: (req, file, cb) => {
@@ -284,39 +284,78 @@ router.post(
       );
 
       /* -----------------------------------------------------
-         SAVE IMAGE URL TO PROJECT
+         SAVE IMAGE TO PROJECT_IMAGES TABLE (IF EXISTS)
       ----------------------------------------------------- */
 
-      const result = await pool.query(
+      let projectImageRow = null;
+      try {
+        const insertImgRes = await pool.query(
+          `
+          INSERT INTO project_images (project_id, image_url, sort_order)
+          VALUES (
+            $1,
+            $2,
+            COALESCE((SELECT MAX(sort_order) + 1 FROM project_images WHERE project_id = $1), 0)
+          )
+          RETURNING *
+          `,
+          [projectId, uploadResult.secure_url]
+        );
+        projectImageRow = insertImgRes.rows[0];
+      } catch (dbErr) {
+        console.warn("Could not insert into project_images:", dbErr.message);
+      }
+
+      /* -----------------------------------------------------
+         SAVE IMAGE URL TO PROJECT (SET COVER IF EMPTY OR FIRST)
+      ----------------------------------------------------- */
+
+      const currentProjectRes = await pool.query(
         `
-        UPDATE projects
-        SET
-          image = $1,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-        AND developer_id = $3
-        RETURNING id, image
+        SELECT id, image
+        FROM projects
+        WHERE id = $1
+        AND developer_id = $2
         `,
-        [
-          uploadResult.secure_url,
-          projectId,
-          req.user.id,
-        ]
+        [projectId, req.user.id]
       );
 
-      if (result.rows.length === 0) {
+      if (currentProjectRes.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message: "Project not found.",
         });
       }
 
+      // If no cover image currently exists, or if this is the first image, set as primary
+      let updatedProject = currentProjectRes.rows[0];
+      if (!updatedProject.image) {
+        const updateRes = await pool.query(
+          `
+          UPDATE projects
+          SET
+            image = $1,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = $2
+          AND developer_id = $3
+          RETURNING id, image
+          `,
+          [
+            uploadResult.secure_url,
+            projectId,
+            req.user.id,
+          ]
+        );
+        updatedProject = updateRes.rows[0];
+      }
+
       return res.status(201).json({
         success: true,
         message:
           "Project image uploaded successfully.",
-        image: result.rows[0].image,
-        project: result.rows[0],
+        image: uploadResult.secure_url,
+        project: updatedProject,
+        project_image: projectImageRow,
       });
     } catch (error) {
       console.error(
@@ -329,6 +368,107 @@ router.post(
         message:
           error.message ||
           "Failed to upload project image.",
+      });
+    }
+  }
+);
+
+/* =========================================================
+   GET PROJECT IMAGES
+========================================================= */
+
+router.get("/project/:projectId/images", async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const result = await pool.query(
+      `
+      SELECT id, project_id, image_url, sort_order, created_at
+      FROM project_images
+      WHERE project_id = $1
+      ORDER BY sort_order ASC, id ASC
+      `,
+      [projectId]
+    );
+
+    return res.json({
+      success: true,
+      images: result.rows,
+    });
+  } catch (error) {
+    console.error("GET PROJECT IMAGES ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch project images",
+    });
+  }
+});
+
+/* =========================================================
+   DELETE PROJECT IMAGE
+========================================================= */
+
+router.delete(
+  "/project/:projectId/image/:imageId",
+  authenticateToken,
+  authorizeRoles("Developer"),
+  async (req, res) => {
+    try {
+      const { projectId, imageId } = req.params;
+
+      const result = await pool.query(
+        `
+        DELETE FROM project_images
+        WHERE id = $1
+        AND project_id = $2
+        AND project_id IN (
+          SELECT id
+          FROM projects
+          WHERE id = $2
+          AND developer_id = $3
+        )
+        RETURNING *
+        `,
+        [imageId, projectId, req.user.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Image not found or you are not the owner",
+        });
+      }
+
+      // Next primary image if available
+      const nextImg = await pool.query(
+        `
+        SELECT image_url
+        FROM project_images
+        WHERE project_id = $1
+        ORDER BY sort_order ASC, id ASC
+        LIMIT 1
+        `,
+        [projectId]
+      );
+
+      await pool.query(
+        `
+        UPDATE projects
+        SET image = $1
+        WHERE id = $2
+        `,
+        [nextImg.rows.length > 0 ? nextImg.rows[0].image_url : null, projectId]
+      );
+
+      return res.json({
+        success: true,
+        message: "Project image deleted successfully",
+      });
+    } catch (error) {
+      console.error("DELETE PROJECT IMAGE ERROR:", error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Failed to delete project image",
       });
     }
   }

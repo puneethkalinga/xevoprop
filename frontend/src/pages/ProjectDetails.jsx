@@ -20,6 +20,7 @@ export default function ProjectDetails() {
   const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -115,22 +116,48 @@ export default function ProjectDetails() {
 
           <div className="project-details-image">
 
-            {project.image ? (
-              <img
-                src={project.image}
-                alt={project.name}
-              />
-            ) : (
-              <div className="project-details-placeholder">
-                <Building2 size={48} />
-                <span>Project Image</span>
-              </div>
-            )}
+            {(() => {
+              const allImages = (project.images && project.images.length > 0)
+                ? project.images.map((img) => img.image_url || img)
+                : (project.image ? [project.image] : []);
+              const currentImg = allImages[selectedImageIndex] || project.image;
 
-            <div className="project-image-badge">
-              <CheckCircle2 size={14} />
-              Verified Project
-            </div>
+              return (
+                <>
+                  {currentImg ? (
+                    <img
+                      src={currentImg}
+                      alt={project.name}
+                    />
+                  ) : (
+                    <div className="project-details-placeholder">
+                      <Building2 size={48} />
+                      <span>Project Image</span>
+                    </div>
+                  )}
+
+                  <div className="project-image-badge">
+                    <CheckCircle2 size={14} />
+                    Verified Project
+                  </div>
+
+                  {allImages.length > 1 && (
+                    <div className="project-details-thumbs">
+                      {allImages.map((thumbUrl, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`project-thumb-btn ${idx === selectedImageIndex ? "active" : ""}`}
+                          onClick={() => setSelectedImageIndex(idx)}
+                        >
+                          <img src={thumbUrl} alt={`Thumbnail ${idx + 1}`} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
           </div>
 

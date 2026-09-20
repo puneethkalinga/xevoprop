@@ -86,8 +86,27 @@ router.get("/public/:id", async (req, res) => {
       });
     }
 
+    const project = result.rows[0];
+    let images = [];
+    try {
+      const imgRes = await pool.query(
+        `SELECT id, image_url, sort_order FROM project_images WHERE project_id = $1 ORDER BY sort_order ASC, id ASC`,
+        [id]
+      );
+      images = imgRes.rows;
+    } catch (e) {
+      // safe fallback if table does not exist
+    }
+
+    if (images.length === 0 && project.image) {
+      images = [{ id: 0, image_url: project.image, sort_order: 0 }];
+    }
+
     return res.json({
-      project: result.rows[0],
+      project: {
+        ...project,
+        images,
+      },
     });
   } catch (error) {
     console.error("PUBLIC PROJECT DETAILS ERROR:", error);
@@ -190,9 +209,28 @@ router.get(
         });
       }
 
+      const project = result.rows[0];
+      let images = [];
+      try {
+        const imgRes = await pool.query(
+          `SELECT id, image_url, sort_order FROM project_images WHERE project_id = $1 ORDER BY sort_order ASC, id ASC`,
+          [id]
+        );
+        images = imgRes.rows;
+      } catch (e) {
+        // safe fallback
+      }
+
+      if (images.length === 0 && project.image) {
+        images = [{ id: 0, image_url: project.image, sort_order: 0 }];
+      }
+
       return res.json({
         success: true,
-        project: result.rows[0],
+        project: {
+          ...project,
+          images,
+        },
       });
     } catch (error) {
       console.error("GET PROJECT ERROR:", error);

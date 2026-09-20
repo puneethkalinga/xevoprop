@@ -40,8 +40,9 @@ function EditProject() {
   });
 
   const [currentImage, setCurrentImage] = useState("");
-  const [newImage, setNewImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
+  const [uploadStatus, setUploadStatus] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,9 +52,9 @@ function EditProject() {
     loadProject();
 
     return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
+      newImages.forEach((img) => {
+        if (img.preview) URL.revokeObjectURL(img.preview);
+      });
     };
   }, [id]);
 
@@ -126,6 +127,11 @@ function EditProject() {
       });
 
       setCurrentImage(project.image || "");
+      if (project.images && Array.isArray(project.images) && project.images.length > 0) {
+        setExistingImages(project.images);
+      } else if (project.image) {
+        setExistingImages([{ id: 0, image_url: project.image }]);
+      }
     } catch (err) {
       console.error("LOAD PROJECT ERROR:", err);
 
@@ -163,74 +169,70 @@ function EditProject() {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setError("Please select a valid image file.");
+    const maxTotal = 15;
+    const currentTotal = existingImages.length + newImages.length;
+    const remaining = maxTotal - currentTotal;
+    if (remaining <= 0) {
+      setError(`You can upload a maximum of ${maxTotal} photos.`);
+      e.target.value = "";
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("Image size must be less than 10MB.");
+    const filesToAdd = files.slice(0, remaining);
+
+    const invalidType = filesToAdd.find((f) => !f.type.startsWith("image/"));
+    if (invalidType) {
+      setError("Please select valid image files (JPG, PNG, WEBP).");
+      e.target.value = "";
+      return;
+    }
+
+    const oversized = filesToAdd.find((f) => f.size > 50 * 1024 * 1024);
+    if (oversized) {
+      setError(`File "${oversized.name}" exceeds the 50MB limit. Max 50MB per photo.`);
+      e.target.value = "";
       return;
     }
 
     setError("");
 
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
+    const added = filesToAdd.map((file) => ({
+      id: `${file.name}-${file.lastModified}-${Math.random()}`,
+      file,
+      preview: URL.createObjectURL(file),
+    }));
 
-    const preview = URL.createObjectURL(file);
-
-    setNewImage(file);
-    setImagePreview(preview);
+    setNewImages((prev) => [...prev, ...added]);
+    e.target.value = "";
   };
 
-  const removeNewImage = () => {
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
-
-    setNewImage(null);
-    setImagePreview("");
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const uploadProjectImage = async (token) => {
-    if (!newImage) return;
-
-    const imageFormData = new FormData();
-
-    imageFormData.append("image", newImage);
-
-    const response = await fetch(
-      `${API_URL}/upload/project/${id}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: imageFormData,
+  const removeExistingImage = async (imgId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (imgId > 0) {
+        await fetch(`${API_URL}/upload/project/${id}/image/${imgId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message ||
-          "Failed to upload project image."
-      );
+      setExistingImages((prev) => prev.filter((img) => img.id !== imgId));
+    } catch (err) {
+      console.error("Delete existing image error:", err);
     }
+  };
 
-    setCurrentImage(data.image || "");
+  const removeNewImage = (imgId) => {
+    setNewImages((prev) => {
+      const target = prev.find((item) => item.id === imgId);
+      if (target && target.preview) {
+        URL.revokeObjectURL(target.preview);
+      }
+      return prev.filter((item) => item.id !== imgId);
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -309,11 +311,20 @@ function EditProject() {
       }
 
       /*
-       * Upload replacement image only
-       * when the developer selected one.
+       * Upload new images in loop
        */
-      if (newImage) {
-        await uploadProjectImage(token);
+      if (newImages.length > 0) {
+        for (let i = 0; i < newImages.length; i++) {
+          setUploadStatus(`Uploading photo ${i + 1} of ${newImages.length}...`);
+          const imgFormData = new FormData();
+          imgFormData.append("image", newImages[i].file);
+
+          await fetch(`${API_URL}/upload/project/${id}`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: imgFormData,
+          });
+        }
       }
 
       alert("Project updated successfully!");
@@ -604,7 +615,10 @@ function EditProject() {
             <div className="project-form-grid">
 
               <div className="project-form-group">
-                <label>Total units</label>
+                <label>
+                  Total units
+                  <span>*</span>
+                </label>
 
                 <input
                   type="number"
@@ -613,10 +627,45 @@ function EditProject() {
                   value={formData.units}
                   onChange={handleChange}
                   placeholder="e.g. 120"
+                  required
                 />
               </div>
 
               <div className="project-form-group">
+                <label>
+                  Unit / Property Type
+                  <span>*</span>
+                </label>
+
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
+                >
+                  {PROPERTY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="preset-chips">
+                  <span className="preset-label">Quick select:</span>
+                  {PROPERTY_TYPES.map((t) => (
+                    <button
+                      type="button"
+                      key={t}
+                      className={`preset-chip-btn ${formData.type === t ? "active" : ""}`}
+                      onClick={() => setFormData((prev) => ({ ...prev, type: t }))}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="project-form-group full">
                 <label>Budget / Price</label>
 
                 <input
@@ -642,85 +691,108 @@ function EditProject() {
                 </div>
               </div>
 
-              {/* PROJECT IMAGE */}
+              {/* MULTI-IMAGE GALLERY UPLOAD */}
 
               <div className="project-form-group full">
-                <label>Project image</label>
+                <div className="project-images-header">
+                  <label>Project photos</label>
+                  <span className="project-images-counter">
+                    {existingImages.length + newImages.length} / 15 photos · Max 50MB each
+                  </span>
+                </div>
 
-                {!imagePreview && currentImage ? (
-                  <div className="project-image-preview">
-                    <img
-                      src={currentImage}
-                      alt={formData.name}
-                    />
-
-                    <div className="project-image-overlay">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          fileInputRef.current?.click()
-                        }
-                      >
-                        <ImagePlus size={16} />
-                        Change Image
-                      </button>
-                    </div>
-                  </div>
-                ) : imagePreview ? (
-                  <div className="project-image-preview">
-                    <img
-                      src={imagePreview}
-                      alt="New project preview"
-                    />
-
-                    <div className="project-image-overlay">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          fileInputRef.current?.click()
-                        }
-                      >
-                        Change Image
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={removeNewImage}
-                        aria-label="Remove new image"
-                      >
-                        <X size={17} />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
+                {existingImages.length === 0 && newImages.length === 0 ? (
                   <button
                     type="button"
                     className="project-image-upload"
-                    onClick={() =>
-                      fileInputRef.current?.click()
-                    }
+                    onClick={() => fileInputRef.current?.click()}
                   >
-                    <ImagePlus size={28} />
-
-                    <strong>
-                      Upload project image
-                    </strong>
-
-                    <span>
-                      JPG, PNG or WEBP · Max 10MB
+                    <ImagePlus size={32} />
+                    <strong>Upload project photos (Multiple)</strong>
+                    <span>JPG, PNG or WEBP · Max 50MB per photo</span>
+                    <span className="project-upload-hint">
+                      Select multiple photos to showcase your property
                     </span>
-
-                    <em>
-                      Choose Image
-                    </em>
+                    <em>Choose Photos</em>
                   </button>
+                ) : (
+                  <div className="project-gallery-wrapper">
+                    <div className="project-gallery-grid">
+                      {/* Existing uploaded photos */}
+                      {existingImages.map((img, idx) => (
+                        <div
+                          key={`existing-${img.id || idx}`}
+                          className={`project-gallery-card ${idx === 0 && newImages.length === 0 ? "is-cover" : ""}`}
+                        >
+                          <img
+                            src={img.image_url || img}
+                            alt={`Project photo ${idx + 1}`}
+                          />
+
+                          <div className="gallery-card-header">
+                            <span className="cover-tag">Existing Photo</span>
+                            <button
+                              type="button"
+                              className="remove-photo-btn"
+                              onClick={() => removeExistingImage(img.id)}
+                              aria-label="Remove photo"
+                            >
+                              <X size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Newly selected photos */}
+                      {newImages.map((img, idx) => (
+                        <div
+                          key={img.id}
+                          className="project-gallery-card is-new"
+                        >
+                          <img
+                            src={img.preview}
+                            alt={`New photo ${idx + 1}`}
+                          />
+
+                          <div className="gallery-card-header">
+                            <span className="cover-tag new-tag">New Photo</span>
+                            <button
+                              type="button"
+                              className="remove-photo-btn"
+                              onClick={() => removeNewImage(img.id)}
+                              aria-label="Remove photo"
+                            >
+                              <X size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {existingImages.length + newImages.length < 15 && (
+                        <button
+                          type="button"
+                          className="project-add-more-card"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Plus size={26} />
+                          <strong>Add More Photos</strong>
+                          <span>Up to 50MB each</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="project-gallery-footer">
+                      <span>Existing photos are preserved. New photos will be uploaded upon saving.</span>
+                    </div>
+                  </div>
                 )}
 
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
-                  onChange={handleImageChange}
+                  multiple
+                  onChange={handleImageSelect}
                   hidden
                 />
               </div>
@@ -767,7 +839,7 @@ function EditProject() {
                     size={17}
                     className="project-loading"
                   />
-                  Saving...
+                  {uploadStatus || "Saving..."}
                 </>
               ) : (
                 <>

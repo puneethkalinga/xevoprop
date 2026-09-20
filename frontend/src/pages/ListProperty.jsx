@@ -119,12 +119,12 @@ function ListProperty() {
       filesToAdd.find(
         (file) =>
           !file.type.startsWith("image/") ||
-          file.size > 10 * 1024 * 1024
+          file.size > 50 * 1024 * 1024
       );
 
     if (invalidFile) {
       setSubmitError(
-        "Only images up to 10MB each are allowed."
+        "Only images up to 50MB each are allowed."
       );
 
       e.target.value = "";

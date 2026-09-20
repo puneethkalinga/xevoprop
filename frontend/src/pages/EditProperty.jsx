@@ -253,10 +253,10 @@ function EditProperty() {
 
       if (
         file.size >
-        10 * 1024 * 1024
+        50 * 1024 * 1024
       ) {
         setError(
-          `${file.name} is larger than 10MB.`
+          `${file.name} is larger than 50MB.`
         );
         continue;
       }

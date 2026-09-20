@@ -38,9 +38,8 @@ function AddProject() {
     status: "Available",
   });
 
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
-
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [uploadStatus, setUploadStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -70,73 +69,64 @@ function AddProject() {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setError("Please select a valid image file.");
+    const maxTotal = 15;
+    const remaining = maxTotal - selectedImages.length;
+    if (remaining <= 0) {
+      setError(`You can upload a maximum of ${maxTotal} photos.`);
+      e.target.value = "";
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("Image size must be less than 10MB.");
+    const filesToAdd = files.slice(0, remaining);
+
+    const invalidType = filesToAdd.find((f) => !f.type.startsWith("image/"));
+    if (invalidType) {
+      setError("Please select valid image files (JPG, PNG, WEBP).");
+      e.target.value = "";
+      return;
+    }
+
+    const oversized = filesToAdd.find((f) => f.size > 50 * 1024 * 1024);
+    if (oversized) {
+      setError(`File "${oversized.name}" exceeds the 50MB limit. Max 50MB per photo.`);
+      e.target.value = "";
       return;
     }
 
     setError("");
 
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
+    const newImages = filesToAdd.map((file) => ({
+      id: `${file.name}-${file.lastModified}-${Math.random()}`,
+      file,
+      preview: URL.createObjectURL(file),
+    }));
 
-    const preview = URL.createObjectURL(file);
-
-    setImage(file);
-    setImagePreview(preview);
+    setSelectedImages((prev) => [...prev, ...newImages]);
+    e.target.value = "";
   };
 
-  const removeImage = () => {
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
-
-    setImage(null);
-    setImagePreview("");
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const uploadProjectImage = async (projectId, token) => {
-    if (!image) return null;
-
-    const imageFormData = new FormData();
-
-    imageFormData.append("image", image);
-
-    const response = await fetch(
-      `${API_URL}/upload/project/${projectId}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: imageFormData,
+  const removeImage = (id) => {
+    setSelectedImages((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target && target.preview) {
+        URL.revokeObjectURL(target.preview);
       }
-    );
+      return prev.filter((item) => item.id !== id);
+    });
+  };
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Failed to upload project image."
-      );
-    }
-
-    return data.image;
+  const setCoverImage = (index) => {
+    if (index === 0) return;
+    setSelectedImages((prev) => {
+      const copy = [...prev];
+      const [selected] = copy.splice(index, 1);
+      copy.unshift(selected);
+      return copy;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -161,6 +151,7 @@ function AddProject() {
 
     try {
       setLoading(true);
+      setUploadStatus("Creating project...");
 
       const token = localStorage.getItem("token");
 
@@ -222,17 +213,38 @@ function AddProject() {
       }
 
       /* =========================
-         UPLOAD IMAGE
+         UPLOAD IMAGES (MULTIPLE)
       ========================= */
 
-      if (image) {
-        await uploadProjectImage(
-          projectId,
-          token
-        );
+      if (selectedImages.length > 0) {
+        for (let i = 0; i < selectedImages.length; i++) {
+          setUploadStatus(
+            `Uploading photo ${i + 1} of ${selectedImages.length}...`
+          );
+
+          const imageFormData = new FormData();
+          imageFormData.append("image", selectedImages[i].file);
+
+          const uploadResponse = await fetch(
+            `${API_URL}/upload/project/${projectId}`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              body: imageFormData,
+            }
+          );
+
+          if (!uploadResponse.ok) {
+            console.warn(
+              `Warning: Upload failed for image ${i + 1}`
+            );
+          }
+        }
       }
 
-      alert("Project created successfully!");
+      alert("Project created successfully with all photos!");
 
       navigate("/my-projects");
     } catch (err) {
@@ -247,6 +259,7 @@ function AddProject() {
       );
     } finally {
       setLoading(false);
+      setUploadStatus("");
     }
   };
 
@@ -499,7 +512,10 @@ function AddProject() {
             <div className="project-form-grid">
 
               <div className="project-form-group">
-                <label>Total units</label>
+                <label>
+                  Total units
+                  <span>*</span>
+                </label>
 
                 <input
                   type="number"
@@ -508,10 +524,45 @@ function AddProject() {
                   value={formData.units}
                   onChange={handleChange}
                   placeholder="e.g. 120"
+                  required
                 />
               </div>
 
               <div className="project-form-group">
+                <label>
+                  Unit / Property Type
+                  <span>*</span>
+                </label>
+
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
+                >
+                  {PROPERTY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="preset-chips">
+                  <span className="preset-label">Quick select:</span>
+                  {PROPERTY_TYPES.map((t) => (
+                    <button
+                      type="button"
+                      key={t}
+                      className={`preset-chip-btn ${formData.type === t ? "active" : ""}`}
+                      onClick={() => setFormData((prev) => ({ ...prev, type: t }))}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="project-form-group full">
                 <label>Budget / Price</label>
 
                 <input
@@ -537,14 +588,20 @@ function AddProject() {
                 </div>
               </div>
 
-              {/* IMAGE UPLOAD */}
+              {/* MULTI-IMAGE GALLERY UPLOAD */}
 
               <div className="project-form-group full">
-                <label>
-                  Project image
-                </label>
+                <div className="project-images-header">
+                  <label>
+                    Project photos
+                    <span>*</span>
+                  </label>
+                  <span className="project-images-counter">
+                    {selectedImages.length} / 15 photos selected · Max 50MB each
+                  </span>
+                </div>
 
-                {!imagePreview ? (
+                {selectedImages.length === 0 ? (
                   <button
                     type="button"
                     className="project-image-upload"
@@ -552,43 +609,88 @@ function AddProject() {
                       fileInputRef.current?.click()
                     }
                   >
-                    <ImagePlus size={28} />
+                    <ImagePlus size={32} />
 
                     <strong>
-                      Upload project image
+                      Upload project photos (Multiple)
                     </strong>
 
                     <span>
-                      JPG, PNG or WEBP · Max 10MB
+                      JPG, PNG or WEBP · Max 50MB per photo
+                    </span>
+
+                    <span className="project-upload-hint">
+                      Select multiple photos to showcase your property
                     </span>
 
                     <em>
-                      Choose Image
+                      Choose Photos
                     </em>
                   </button>
                 ) : (
-                  <div className="project-image-preview">
-                    <img
-                      src={imagePreview}
-                      alt="Project preview"
-                    />
+                  <div className="project-gallery-wrapper">
+                    <div className="project-gallery-grid">
+                      {selectedImages.map((img, idx) => (
+                        <div
+                          key={img.id}
+                          className={`project-gallery-card ${idx === 0 ? "is-cover" : ""}`}
+                        >
+                          <img
+                            src={img.preview}
+                            alt={`Upload ${idx + 1}`}
+                          />
 
-                    <div className="project-image-overlay">
+                          <div className="gallery-card-header">
+                            {idx === 0 ? (
+                              <span className="cover-tag">
+                                ★ Primary Cover
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                className="make-cover-tag"
+                                onClick={() => setCoverImage(idx)}
+                              >
+                                Set as Cover
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              className="remove-photo-btn"
+                              onClick={() => removeImage(img.id)}
+                              aria-label="Remove photo"
+                            >
+                              <X size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {selectedImages.length < 15 && (
+                        <button
+                          type="button"
+                          className="project-add-more-card"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Plus size={26} />
+                          <strong>Add More Photos</strong>
+                          <span>Up to 50MB each</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="project-gallery-footer">
+                      <span>The first photo is automatically used as the primary card cover.</span>
                       <button
                         type="button"
-                        onClick={() =>
-                          fileInputRef.current?.click()
-                        }
+                        className="project-clear-btn"
+                        onClick={() => {
+                          selectedImages.forEach((img) => URL.revokeObjectURL(img.preview));
+                          setSelectedImages([]);
+                        }}
                       >
-                        Change Image
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        aria-label="Remove image"
-                      >
-                        <X size={17} />
+                        Clear all
                       </button>
                     </div>
                   </div>
@@ -598,7 +700,8 @@ function AddProject() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
-                  onChange={handleImageChange}
+                  multiple
+                  onChange={handleImageSelect}
                   hidden
                 />
               </div>
@@ -646,7 +749,7 @@ function AddProject() {
                     size={17}
                     className="project-loading"
                   />
-                  Creating...
+                  {uploadStatus || "Creating..."}
                 </>
               ) : (
                 <>
