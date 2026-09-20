@@ -11,9 +11,9 @@ import {
 
 import {
   LinkedInIcon,
-  FacebookIcon,
-  YoutubeIcon,
+  InstagramIcon,
   TwitterXIcon,
+  FacebookIcon,
 } from "./SocialIcons";
 import { LogoWordmark } from "./Logo";
 import "./Footer.css";
@@ -117,6 +117,17 @@ function Footer() {
               </a>
 
               <a
+                href="https://www.instagram.com/xevotechpvt.ltd?stkn=MWJ2MjZpdGw5YWJuaA=="
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                title="Follow Xevotech on Instagram"
+                className="social-tile"
+              >
+                <InstagramIcon size={15} />
+              </a>
+
+              <a
                 href="https://twitter.com/xevotech"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -125,17 +136,6 @@ function Footer() {
                 className="social-tile"
               >
                 <TwitterXIcon size={14} />
-              </a>
-
-              <a
-                href="https://www.youtube.com/@xevotech"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="YouTube"
-                title="Watch on YouTube"
-                className="social-tile"
-              >
-                <YoutubeIcon size={15} />
               </a>
 
               <a
