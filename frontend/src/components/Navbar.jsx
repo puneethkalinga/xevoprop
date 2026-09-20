@@ -165,7 +165,6 @@ function Navbar() {
 
               <Link to="/register" className="nav-cta-btn">
                 <span>Get Started</span>
-                <Sparkles size={14} />
               </Link>
             </>
           ) : (

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import {
   Search,
   MapPin,
@@ -7,11 +6,9 @@ import {
   Building2,
   Home,
   LandPlot,
-  Sparkles,
   ShieldCheck,
-  Zap,
+  CheckCircle,
   Building,
-  ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./Hero.css";
@@ -58,12 +55,12 @@ function Hero() {
   ];
 
   const propertyOptions = [
-    { value: "", label: "All Asset Classes" },
-    { value: "apartment", label: "Luxury Apartments" },
-    { value: "villa", label: "Gated Villas" },
-    { value: "house", label: "Independent House" },
-    { value: "commercial", label: "Grade-A Commercial" },
-    { value: "plot", label: "Plotted Development" },
+    { value: "", label: "All Property Types" },
+    { value: "apartment", label: "Apartments & Flats" },
+    { value: "villa", label: "Villas & Gated Communities" },
+    { value: "house", label: "Independent Houses" },
+    { value: "commercial", label: "Commercial Office Spaces" },
+    { value: "plot", label: "Residential Plots" },
   ];
 
   const budgetOptions = [
@@ -72,83 +69,54 @@ function Hero() {
     { value: "5000000-10000000", label: "₹50L – ₹1 Crore" },
     { value: "10000000-25000000", label: "₹1 Cr – ₹2.5 Cr" },
     { value: "25000000-50000000", label: "₹2.5 Cr – ₹5 Cr" },
-    { value: "50000000+", label: "Ultra Luxury (> ₹5 Cr)" },
+    { value: "50000000+", label: "Above ₹5 Crore" },
   ];
 
   return (
-    <section className="hero-pro">
-      {/* AMBIENT BACKGROUND GLOWS */}
-      <div className="hero-pro-grid"></div>
-      <div className="hero-pro-glow-left"></div>
-      <div className="hero-pro-glow-right"></div>
+    <section className="hero-section">
+      <div className="hero-container">
+        {/* HEADER COPY */}
+        <div className="hero-header">
+          <div className="hero-eyebrow">
+            <ShieldCheck size={14} />
+            <span>Verified Real Estate Portal</span>
+          </div>
 
-      <div className="hero-pro-container">
-        {/* TRUST BADGE */}
-        <motion.div
-          className="hero-pro-badge"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="badge-pulse-dot"></span>
-          <span>India's Most Transparent PropTech Ecosystem</span>
-          <span className="badge-divider">•</span>
-          <span className="badge-sub">Zero Brokerage</span>
-        </motion.div>
+          <h1 className="hero-title">
+            Find Your Next Property in India’s Top Metros
+          </h1>
 
-        {/* HERO MAIN TITLE */}
-        <motion.h1
-          className="hero-pro-title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          Discover Verified Real Estate.
-          <br />
-          <span className="hero-gradient-text">Direct Deals. Zero Friction.</span>
-        </motion.h1>
+          <p className="hero-subtitle">
+            Explore RERA-approved residential apartments, luxury villas, and commercial
+            developments from verified builders across Hyderabad, Bengaluru, and beyond.
+          </p>
+        </div>
 
-        {/* SUBTITLE */}
-        <motion.p
-          className="hero-pro-subtitle"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Explore RERA-verified luxury residences, commercial towers, and premium plots
-          across Hyderabad and leading metros with direct developer pricing.
-        </motion.p>
-
-        {/* FROSTED GLASS SEARCH ENGINE */}
-        <motion.div
-          className="hero-search-capsule"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-        >
-          {/* SEARCH TABS */}
-          <div className="hero-tab-row">
+        {/* SEARCH CARD */}
+        <div className="hero-search-card">
+          {/* TABS */}
+          <div className="hero-tabs">
             <button
               type="button"
-              className={`hero-tab-pill ${searchType === "buy" ? "active" : ""}`}
+              className={`hero-tab ${searchType === "buy" ? "active" : ""}`}
               onClick={() => setSearchType("buy")}
             >
               <Home size={15} />
-              <span>Buy Properties</span>
+              <span>Buy</span>
             </button>
 
             <button
               type="button"
-              className={`hero-tab-pill ${searchType === "commercial" ? "active" : ""}`}
+              className={`hero-tab ${searchType === "commercial" ? "active" : ""}`}
               onClick={() => setSearchType("commercial")}
             >
               <Building2 size={15} />
-              <span>Commercial Hubs</span>
+              <span>Commercial</span>
             </button>
 
             <button
               type="button"
-              className={`hero-tab-pill ${searchType === "plot" ? "active" : ""}`}
+              className={`hero-tab ${searchType === "plot" ? "active" : ""}`}
               onClick={() => setSearchType("plot")}
             >
               <LandPlot size={15} />
@@ -156,13 +124,13 @@ function Hero() {
             </button>
           </div>
 
-          {/* INPUT FIELDS ROW */}
-          <div className="hero-inputs-strip">
-            {/* LOCATION INPUT */}
-            <div className="hero-input-cell cell-location">
-              <MapPin size={18} className="cell-icon" />
-              <div className="cell-content">
-                <span className="cell-label">Prime Location</span>
+          {/* SEARCH FORM ROW */}
+          <div className="hero-form-row">
+            {/* LOCATION */}
+            <div className="hero-field field-location">
+              <MapPin size={18} className="field-icon" />
+              <div className="field-inner">
+                <label>Location / City</label>
                 <input
                   type="text"
                   value={location}
@@ -174,13 +142,13 @@ function Hero() {
               </div>
             </div>
 
-            <div className="cell-divider"></div>
+            <div className="field-separator" />
 
-            {/* PROPERTY TYPE SELECT */}
-            <div className="hero-input-cell cell-type">
-              <div className="cell-content">
-                <span className="cell-label">Property Category</span>
-                <div className="custom-select-box">
+            {/* PROPERTY TYPE */}
+            <div className="hero-field field-type">
+              <div className="field-inner">
+                <label>Property Type</label>
+                <div className="select-wrapper">
                   <select
                     value={propertyType}
                     onChange={(e) => setPropertyType(e.target.value)}
@@ -191,18 +159,18 @@ function Hero() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown size={14} className="select-arrow" />
+                  <ChevronDown size={14} className="select-caret" />
                 </div>
               </div>
             </div>
 
-            <div className="cell-divider"></div>
+            <div className="field-separator" />
 
-            {/* BUDGET SELECT */}
-            <div className="hero-input-cell cell-budget">
-              <div className="cell-content">
-                <span className="cell-label">Target Budget</span>
-                <div className="custom-select-box">
+            {/* BUDGET */}
+            <div className="hero-field field-budget">
+              <div className="field-inner">
+                <label>Budget</label>
+                <div className="select-wrapper">
                   <select
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
@@ -213,79 +181,71 @@ function Hero() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown size={14} className="select-arrow" />
+                  <ChevronDown size={14} className="select-caret" />
                 </div>
               </div>
             </div>
 
-            {/* SUBMIT BUTTON */}
+            {/* SUBMIT */}
             <button
               type="button"
-              className="hero-search-exec-btn"
+              className="hero-submit-btn"
               onClick={() => handleSearch()}
             >
-              <Search size={18} />
-              <span>Find Properties</span>
+              <Search size={17} />
+              <span>Search</span>
             </button>
           </div>
 
-          {/* QUICK HOTSPOT PILLS */}
-          <div className="hero-hotspots-row">
-            <span className="hotspots-title">Trending Locations:</span>
-            <div className="hotspots-pills">
+          {/* POPULAR SEARCHES */}
+          <div className="hero-popular-row">
+            <span className="popular-label">Popular Searches:</span>
+            <div className="popular-tags">
               {quickHotspots.map((spot) => (
                 <button
                   key={spot.label}
                   type="button"
-                  className="hotspot-chip"
+                  className="popular-tag"
                   onClick={() => {
                     setLocation(spot.query);
                     handleSearch(spot.query);
                   }}
                 >
-                  <MapPin size={11} />
-                  <span>{spot.label}</span>
+                  {spot.label}
                 </button>
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* METRIC STRIP */}
-        <motion.div
-          className="hero-metric-bar"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <div className="metric-item">
-            <ShieldCheck size={18} className="metric-icon" />
-            <div>
-              <strong>100% RERA Verified</strong>
-              <span>Clean titles & approvals</span>
-            </div>
+        {/* TRUST BADGES BAR */}
+        <div className="hero-trust-bar">
+          <div className="trust-item">
+            <CheckCircle size={16} className="trust-icon" />
+            <span>100% RERA Verified</span>
           </div>
 
-          <div className="metric-sep"></div>
+          <div className="trust-dot">•</div>
 
-          <div className="metric-item">
-            <Zap size={18} className="metric-icon" />
-            <div>
-              <strong>Direct Developer Terms</strong>
-              <span>Zero intermediary markup</span>
-            </div>
+          <div className="trust-item">
+            <CheckCircle size={16} className="trust-icon" />
+            <span>Direct Builder Pricing</span>
           </div>
 
-          <div className="metric-sep"></div>
+          <div className="trust-dot">•</div>
 
-          <div className="metric-item">
-            <Building size={18} className="metric-icon" />
-            <div>
-              <strong>₹4,500+ Cr Inventory</strong>
-              <span>Across Hyderabad & Bangalore</span>
-            </div>
+          <div className="trust-item">
+            <CheckCircle size={16} className="trust-icon" />
+            <span>Zero Brokerage Markup</span>
           </div>
-        </motion.div>
+
+          <div className="trust-dot">•</div>
+
+          <div className="trust-item">
+            <Building size={16} className="trust-icon" />
+            <span>Top Tier Developers</span>
+          </div>
+        </div>
       </div>
     </section>
   );
