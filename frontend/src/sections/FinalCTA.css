@@ -1,0 +1,146 @@
+/* =========================================================
+   XEVOPROP — FINAL CONVERSION CTA (LUXURY GLASS)
+   Obsidian Glass + Radial Cyan Spotlight
+   ========================================================= */
+
+.final-cta-section {
+  position: relative;
+  overflow: hidden;
+  padding: 100px 0 50px;
+  background: radial-gradient(circle at 50% 30%, rgba(0, 210, 255, 0.1) 0%, transparent 60%),
+              #06080D;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.final-cta-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 28px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.final-cta-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.final-cta-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  color: #00D2FF;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
+}
+
+.final-cta-content h2 {
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  margin: 0 0 16px;
+  color: #FFFFFF;
+}
+
+.final-cta-content h2 span {
+  color: #00D2FF;
+  text-shadow: 0 0 30px rgba(0, 210, 255, 0.35);
+}
+
+.final-cta-content > p {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 620px;
+  margin: 0 auto 36px;
+  line-height: 1.65;
+}
+
+.final-cta-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.final-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00D2FF 0%, #0088D4 100%);
+  color: #05070B;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 4px 24px rgba(0, 210, 255, 0.35);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.final-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 32px rgba(0, 210, 255, 0.55);
+}
+
+.final-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 26px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.final-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.final-cta-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .final-cta-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .final-cta-primary,
+  .final-cta-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  .final-cta-bottom {
+    gap: 14px;
+  }
+}

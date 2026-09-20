@@ -1,0 +1,197 @@
+/* =========================================================
+   XEVOPROP — HOW IT WORKS (LUXURY GLASS)
+   Obsidian Glass + Stepper Cards
+   ========================================================= */
+
+.how-section {
+  position: relative;
+  overflow: hidden;
+  padding: 90px 0 100px;
+  background: #06080D;
+  color: #FFFFFF;
+}
+
+.how-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* HEADER */
+.how-header {
+  max-width: 650px;
+  margin-bottom: 50px;
+}
+
+.how-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #00D2FF;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.how-header h2 {
+  font-size: clamp(2rem, 3.8vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 12px;
+  color: #FFFFFF;
+}
+
+.how-header h2 span {
+  color: #00D2FF;
+  text-shadow: 0 0 24px rgba(0, 210, 255, 0.3);
+}
+
+.how-header p {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* STEPS GRID */
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.how-step {
+  background: rgba(13, 18, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 30px 26px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.how-step:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0, 210, 255, 0.35);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(0, 210, 255, 0.15);
+}
+
+.how-step-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.how-step-number {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #00D2FF;
+  letter-spacing: 0.1em;
+  font-family: monospace;
+}
+
+.how-step-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.how-step-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  color: #00D2FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.how-step:hover .how-step-icon {
+  background: #00D2FF;
+  color: #05070B;
+  box-shadow: 0 0 16px rgba(0, 210, 255, 0.4);
+}
+
+.how-step-content {
+  padding-top: 24px;
+}
+
+.how-step-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 10px;
+}
+
+.how-step-content p {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.how-step-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  color: #00D2FF;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.how-step-link:hover {
+  text-decoration: underline;
+}
+
+/* BOTTOM PROMISE */
+.how-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 50px;
+  padding: 18px 24px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.how-bottom-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.how-bottom-content span {
+  color: #00D2FF;
+  font-weight: 700;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .how-steps {
+    grid-template-columns: 1fr;
+  }
+}

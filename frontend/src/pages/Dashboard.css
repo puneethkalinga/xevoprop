@@ -1,0 +1,648 @@
+/* =========================================================
+   XEVOPROP DASHBOARD
+   Bright PropTech / Modern SaaS Theme
+   ========================================================= */
+
+.dashboard-page {
+  min-height: calc(100vh - 76px);
+  padding: 48px 0 80px;
+
+  background:
+    radial-gradient(
+      circle at 92% 4%,
+      rgba(0, 198, 255, 0.09),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 4% 35%,
+      rgba(105, 87, 255, 0.05),
+      transparent 25%
+    ),
+    #f7faff;
+}
+
+.dashboard-container {
+  width: min(1240px, calc(100% - 80px));
+  margin: 0 auto;
+}
+
+/* =========================================================
+   NOT LOGGED IN
+   ========================================================= */
+
+.dashboard-login {
+  min-height: calc(100vh - 76px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  padding: 40px;
+
+  text-align: center;
+
+  color: var(--text-primary);
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(0, 198, 255, 0.1),
+      transparent 30%
+    ),
+    #f7faff;
+}
+
+.dashboard-login > svg {
+  display: flex;
+
+  width: 70px;
+  height: 70px;
+
+  padding: 17px;
+
+  margin-bottom: 22px;
+
+  color: var(--primary);
+
+  background: #edf5ff;
+
+  border: 1px solid #d5e5fb;
+  border-radius: 20px;
+}
+
+.dashboard-login h1 {
+  margin: 0 0 10px;
+
+  font-family:
+    "Plus Jakarta Sans",
+    "Inter",
+    sans-serif;
+
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.dashboard-login p {
+  margin: 0 0 25px;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+}
+
+.dashboard-login a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 45px;
+  padding: 0 24px;
+
+  color: #ffffff;
+
+  background: var(--gradient-primary);
+
+  border-radius: 10px;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  box-shadow:
+    0 9px 22px rgba(18, 100, 255, 0.2);
+
+  transition: all 0.25s ease;
+}
+
+.dashboard-login a:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 13px 28px rgba(18, 100, 255, 0.26);
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+
+  margin-bottom: 28px;
+}
+
+.dashboard-header > div > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 10px;
+
+  color: var(--primary);
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.dashboard-header > div > span::before {
+  content: "";
+
+  width: 24px;
+  height: 2px;
+
+  border-radius: 999px;
+
+  background: var(--gradient-primary);
+}
+
+.dashboard-header h1 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-family:
+    "Plus Jakarta Sans",
+    "Inter",
+    sans-serif;
+
+  font-size: clamp(32px, 4vw, 46px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.dashboard-header p {
+  max-width: 580px;
+
+  margin: 10px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 42px;
+  padding: 0 16px;
+
+  flex-shrink: 0;
+
+  color: #63718a;
+
+  background: #ffffff;
+
+  border: 1px solid #dce6f1;
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  color: #d64b4b;
+
+  background: #fff5f5;
+
+  border-color: #ffd3d3;
+}
+
+/* =========================================================
+   USER CARD
+   ========================================================= */
+
+.dashboard-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  padding: 18px 20px;
+
+  background: #ffffff;
+
+  border: 1px solid var(--border);
+  border-radius: 15px;
+
+  box-shadow: var(--shadow-card);
+
+  margin-bottom: 18px;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  color: #ffffff;
+
+  background: var(--gradient-primary);
+
+  border-radius: 14px;
+
+  font-family:
+    "Plus Jakarta Sans",
+    "Inter",
+    sans-serif;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  box-shadow:
+    0 7px 17px rgba(18, 100, 255, 0.18);
+}
+
+.user-details {
+  min-width: 0;
+}
+
+.user-details strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.user-details p {
+  overflow: hidden;
+
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-role {
+  margin-left: auto;
+
+  padding: 7px 12px;
+
+  color: var(--primary);
+
+  background: #edf5ff;
+
+  border: 1px solid #d5e5fb;
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+/* =========================================================
+   INTRO
+   ========================================================= */
+
+.dashboard-intro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-height: 48px;
+
+  margin-bottom: 20px;
+  padding: 0 16px;
+
+  color: #42536e;
+
+  background:
+    linear-gradient(
+      100deg,
+      #eef6ff,
+      #f7fbff
+    );
+
+  border: 1px solid #dce9f8;
+  border-radius: 11px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dashboard-intro svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+/* =========================================================
+   DASHBOARD GRID
+   ========================================================= */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 17px;
+}
+
+/* =========================================================
+   DASHBOARD CARD
+   ========================================================= */
+
+.dashboard-card {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  min-height: 185px;
+
+  padding: 25px;
+
+  overflow: hidden;
+
+  color: inherit;
+
+  background: #ffffff;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+
+  text-decoration: none;
+
+  box-shadow: var(--shadow-card);
+
+  transition:
+    transform 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease;
+}
+
+.dashboard-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 130px;
+  height: 130px;
+
+  top: -70px;
+  right: -55px;
+
+  border-radius: 50%;
+
+  background: rgba(0, 198, 255, 0.055);
+
+  transition:
+    transform 0.35s ease,
+    background 0.35s ease;
+}
+
+.dashboard-card::after {
+  content: "";
+
+  position: absolute;
+
+  left: 25px;
+  bottom: 0;
+
+  width: 55px;
+  height: 3px;
+
+  border-radius: 999px 999px 0 0;
+
+  background: var(--gradient-primary);
+
+  transition: width 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+
+  border-color: var(--border-blue);
+
+  box-shadow:
+    0 15px 35px rgba(18, 100, 255, 0.1);
+}
+
+.dashboard-card:hover::before {
+  transform: scale(1.5);
+  background: rgba(0, 198, 255, 0.09);
+}
+
+.dashboard-card:hover::after {
+  width: calc(100% - 50px);
+}
+
+.dashboard-card > svg {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 43px;
+  height: 43px;
+
+  padding: 11px;
+
+  box-sizing: border-box;
+
+  color: var(--primary);
+
+  background: #edf5ff;
+
+  border: 1px solid #d6e6fb;
+  border-radius: 12px;
+
+  transition: all 0.28s ease;
+}
+
+.dashboard-card:hover > svg {
+  color: #ffffff;
+
+  background: var(--gradient-primary);
+
+  border-color: transparent;
+
+  transform: translateY(-2px);
+}
+
+.dashboard-card strong {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 20px;
+
+  color: var(--text-primary);
+
+  font-family:
+    "Plus Jakarta Sans",
+    "Inter",
+    sans-serif;
+
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.35;
+
+  transition: color 0.2s ease;
+}
+
+.dashboard-card:hover strong {
+  color: var(--primary);
+}
+
+.dashboard-card > span {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 8px;
+
+  color: var(--text-secondary);
+
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 950px) {
+  .dashboard-container {
+    width: min(100% - 60px, 850px);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+  .dashboard-page {
+    padding: 35px 0 60px;
+  }
+
+  .dashboard-container {
+    width: calc(100% - 32px);
+  }
+
+  .dashboard-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 34px;
+  }
+
+  .dashboard-header p {
+    font-size: 13px;
+  }
+
+  .logout-btn {
+    width: 100%;
+  }
+
+  .dashboard-user {
+    padding: 15px;
+  }
+
+  .user-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .user-role {
+    padding: 6px 9px;
+    font-size: 9px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .dashboard-card {
+    min-height: 160px;
+    padding: 22px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 420px) {
+  .dashboard-container {
+    width: calc(100% - 24px);
+  }
+
+  .dashboard-header h1 {
+    font-size: 30px;
+  }
+
+  .dashboard-header p {
+    font-size: 12px;
+  }
+
+  .dashboard-user {
+    gap: 11px;
+  }
+
+  .user-details strong {
+    font-size: 13px;
+  }
+
+  .user-details p {
+    font-size: 11px;
+  }
+
+  .user-role {
+    display: none;
+  }
+
+  .dashboard-intro {
+    align-items: flex-start;
+
+    padding: 12px 14px;
+
+    line-height: 1.5;
+  }
+
+  .dashboard-card {
+    min-height: 150px;
+    padding: 20px;
+  }
+
+  .dashboard-card strong {
+    font-size: 15px;
+  }
+}

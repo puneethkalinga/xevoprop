@@ -1,0 +1,421 @@
+/* =========================================================
+   XEVOPROP — LUXURY EDITORIAL HERO (PRO-TIER)
+   Obsidian Glass + Electric Cyan + Floating Command Capsule
+   ========================================================= */
+
+.hero-pro {
+  position: relative;
+  padding: 100px 0 90px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 10%, rgba(0, 210, 255, 0.08) 0%, transparent 60%),
+              #06080D;
+  color: #FFFFFF;
+}
+
+/* Subtle architectural coordinate grid */
+.hero-pro-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  pointer-events: none;
+}
+
+/* Glowing accent orbs */
+.hero-pro-glow-left {
+  position: absolute;
+  top: 15%;
+  left: -150px;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.1) 0%, transparent 70%);
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.hero-pro-glow-right {
+  position: absolute;
+  top: 30%;
+  right: -150px;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.hero-pro-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* PILL BADGE */
+.hero-pro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #E2E8F0;
+  margin-bottom: 24px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
+}
+
+.badge-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00D2FF;
+  box-shadow: 0 0 10px #00D2FF;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.badge-divider {
+  opacity: 0.3;
+}
+
+.badge-sub {
+  color: #00D2FF;
+  font-weight: 700;
+}
+
+/* TITLE & HEADINGS */
+.hero-pro-title {
+  font-size: clamp(2.4rem, 5.2vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+  margin: 0 auto 20px;
+  max-width: 960px;
+  color: #FFFFFF;
+}
+
+.hero-gradient-text {
+  background: linear-gradient(135deg, #00D2FF 0%, #38BDF8 50%, #FFFFFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 40px rgba(0, 210, 255, 0.3);
+}
+
+.hero-pro-subtitle {
+  font-size: clamp(0.98rem, 1.8vw, 1.2rem);
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 700px;
+  margin: 0 auto 44px;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+/* =========================================================
+   FROSTED GLASS SEARCH CAPSULE
+   ========================================================= */
+
+.hero-search-capsule {
+  max-width: 1040px;
+  margin: 0 auto 54px;
+  background: rgba(13, 18, 28, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 16px 20px 20px;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 0 1px 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 40px rgba(0, 210, 255, 0.06);
+  text-align: left;
+}
+
+/* TABS */
+.hero-tab-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
+}
+
+.hero-tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-tab-pill:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.hero-tab-pill.active {
+  background: rgba(0, 210, 255, 0.12);
+  border-color: rgba(0, 210, 255, 0.35);
+  color: #00D2FF;
+  box-shadow: 0 0 16px rgba(0, 210, 255, 0.15);
+}
+
+/* INPUT STRIP */
+.hero-inputs-strip {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 8px 10px 8px 18px;
+  gap: 16px;
+}
+
+.hero-input-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cell-location {
+  flex: 1.5;
+}
+
+.cell-type, .cell-budget {
+  flex: 1.1;
+}
+
+.cell-icon {
+  color: #00D2FF;
+  flex-shrink: 0;
+}
+
+.cell-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.cell-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 2px;
+}
+
+.cell-content input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #FFFFFF;
+  font-size: 0.94rem;
+  font-weight: 500;
+  font-family: inherit;
+  width: 100%;
+}
+
+.cell-content input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-select-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.custom-select-box select {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #FFFFFF;
+  font-size: 0.92rem;
+  font-weight: 500;
+  font-family: inherit;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 20px;
+}
+
+.custom-select-box select option {
+  background: #0B0F19;
+  color: #FFFFFF;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 0;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.cell-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.hero-search-exec-btn {
+  background: linear-gradient(135deg, #00D2FF 0%, #0088D4 100%);
+  color: #05070B;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 24px rgba(0, 210, 255, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.hero-search-exec-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 32px rgba(0, 210, 255, 0.55);
+}
+
+/* HOTSPOTS */
+.hero-hotspots-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+}
+
+.hotspots-title {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hotspots-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hotspot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hotspot-chip:hover {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: rgba(0, 210, 255, 0.35);
+  color: #00D2FF;
+}
+
+/* METRIC BAR */
+.hero-metric-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.metric-icon {
+  color: #00D2FF;
+  flex-shrink: 0;
+}
+
+.metric-item strong {
+  display: block;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.metric-item span {
+  display: block;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.metric-sep {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .hero-inputs-strip {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 16px;
+  }
+  .cell-divider {
+    display: none;
+  }
+  .hero-search-exec-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+  }
+  .hero-metric-bar {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .metric-sep {
+    display: none;
+  }
+}

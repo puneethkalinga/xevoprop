@@ -1,0 +1,70 @@
+.logo-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  user-select: none;
+}
+
+.logo-img {
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.logo-wordmark:hover .logo-img {
+  transform: scale(1.05);
+  box-shadow: 0 0 28px rgba(0, 210, 255, 0.45);
+}
+
+.logo-text-group {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo-brand-name {
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+}
+
+.logo-brand-xevo {
+  color: #FFFFFF;
+}
+
+.logo-brand-prop {
+  color: #00D2FF;
+  text-shadow: 0 0 16px rgba(0, 210, 255, 0.5);
+  margin-left: 2px;
+}
+
+.logo-brand-sub {
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+/* Sizing variants */
+.logo-small .logo-brand-name {
+  font-size: 1.05rem;
+}
+
+.logo-small .logo-brand-sub {
+  font-size: 0.52rem;
+}
+
+.logo-large .logo-brand-name {
+  font-size: 1.6rem;
+}
+
+.logo-large .logo-brand-sub {
+  font-size: 0.68rem;
+}

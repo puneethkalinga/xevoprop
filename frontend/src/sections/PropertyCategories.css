@@ -1,0 +1,189 @@
+/* =========================================================
+   XEVOPROP — PROPERTY CATEGORIES (LUXURY GLASS)
+   Obsidian Glass Grid
+   ========================================================= */
+
+.categories-section {
+  position: relative;
+  overflow: hidden;
+  padding: 90px 0 100px;
+  background: #06080D;
+  color: #FFFFFF;
+}
+
+.categories-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* HEADING */
+.categories-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+.categories-heading > div {
+  max-width: 650px;
+}
+
+.categories-heading .section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #00D2FF;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.categories-heading h2 {
+  font-size: clamp(2rem, 3.8vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: #FFFFFF;
+}
+
+.categories-heading h2 span {
+  color: #00D2FF;
+  text-shadow: 0 0 24px rgba(0, 210, 255, 0.3);
+}
+
+.categories-heading > p {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* GRID */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* CARD */
+.category-card {
+  background: rgba(13, 18, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.category-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0, 210, 255, 0.35);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(0, 210, 255, 0.15);
+  background: rgba(13, 18, 28, 0.85);
+}
+
+.category-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.category-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  color: #00D2FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.category-card:hover .category-icon {
+  background: #00D2FF;
+  color: #05070B;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+}
+
+.category-arrow {
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.category-card:hover .category-arrow {
+  color: #00D2FF;
+  transform: translate(3px, -3px);
+}
+
+.category-content {
+  margin-top: 24px;
+}
+
+.category-content h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 8px;
+}
+
+.category-content p {
+  font-size: 0.86rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.category-count {
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #00D2FF;
+  letter-spacing: 0.05em;
+}
+
+.category-line {
+  position: absolute;
+  left: 28px;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00D2FF, #38BDF8);
+  transition: width 0.3s ease;
+}
+
+.category-card:hover .category-line {
+  width: 80px;
+}
+
+@media (max-width: 960px) {
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+  .categories-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
