@@ -1,31 +1,29 @@
 import "./Logo.css";
 
-export function LogoImage({ className = "logo-img", size = 36 }) {
+export function LogoImage({ className = "logo-img", size = 50, variant = "light" }) {
+  const isDark = variant === "dark";
   return (
     <img
-      src="/logo.jpeg"
-      alt="Xevoprop by Xevotech"
+      src={isDark ? "/xevoprop-logo.png" : "/logo.png"}
+      alt="XevopropTech"
       className={className}
-      style={{ width: size, height: size, objectFit: "contain" }}
+      style={{ height: size, width: "auto", objectFit: "contain" }}
     />
   );
 }
 
-export function LogoWordmark({ size = "default", showSubtitle = true, variant = "light" }) {
+export function LogoWordmark({ size = "default", variant = "light", className = "" }) {
+  const isDark = variant === "dark";
+  const height = size === "small" ? 38 : size === "large" ? 64 : 50;
+
   return (
-    <div className={`logo-wordmark logo-${size} logo-${variant}`}>
-      <LogoImage size={size === "small" ? 28 : size === "large" ? 44 : 36} />
-      <div className="logo-text-group">
-        <div className="logo-brand-name">
-          <span className="logo-brand-xevo">XEVO</span>
-          <span className="logo-brand-prop">PROP</span>
-        </div>
-        {showSubtitle && (
-          <span className="logo-brand-sub">
-            Xevotech • PropTech Ecosystem
-          </span>
-        )}
-      </div>
+    <div className={`logo-brand-container logo-${size} ${isDark ? "logo-dark" : "logo-light"} ${className}`}>
+      <img
+        src={isDark ? "/xevoprop-logo.png" : "/logo.png"}
+        alt="XevopropTech"
+        className="brand-official-logo"
+        style={{ height, width: "auto", objectFit: "contain" }}
+      />
     </div>
   );
 }

@@ -46,9 +46,11 @@
   margin-bottom: 20px;
 }
 
+.footer-brand-logo-link .brand-official-logo,
 .footer-brand-logo {
-  width: 140px;
+  width: 145px;
   height: auto;
+  max-height: 110px;
   object-fit: contain;
   display: block;
 }

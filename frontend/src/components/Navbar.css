@@ -37,6 +37,13 @@
   align-items: center;
 }
 
+.nav-logo .brand-official-logo {
+  height: 48px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+
 /* CENTER NAVIGATION MENU */
 .nav-center-menu {
   display: flex;

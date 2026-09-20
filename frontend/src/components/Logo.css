@@ -1,87 +1,27 @@
-.logo-wordmark {
+.logo-brand-container {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
   user-select: none;
 }
 
-.logo-img {
-  border-radius: 6px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+.brand-official-logo {
+  display: block;
   transition: transform 0.2s ease;
 }
 
-.logo-wordmark:hover .logo-img {
-  transform: scale(1.03);
+.logo-brand-container:hover .brand-official-logo {
+  transform: scale(1.02);
 }
 
-.logo-text-group {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
+.logo-small .brand-official-logo {
+  height: 38px;
 }
 
-.logo-brand-name {
-  font-family: var(--font-display);
-  font-size: 1.22rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  display: flex;
-  align-items: center;
+.logo-default .brand-official-logo {
+  height: 50px;
 }
 
-.logo-brand-xevo {
-  color: #0F172A;
-}
-
-.logo-brand-prop {
-  color: #1E40AF;
-  margin-left: 2px;
-}
-
-.logo-brand-sub {
-  font-size: 0.58rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #64748B;
-  margin-top: 2px;
-  white-space: nowrap;
-}
-
-/* Sizing variants */
-.logo-small .logo-brand-name {
-  font-size: 1.05rem;
-}
-
-.logo-small .logo-brand-sub {
-  font-size: 0.52rem;
-}
-
-.logo-large .logo-brand-name {
-  font-size: 1.5rem;
-}
-
-.logo-large .logo-brand-sub {
-  font-size: 0.65rem;
-}
-
-/* Dark background variant */
-.logo-dark .logo-brand-xevo {
-  color: #FFFFFF;
-}
-
-.logo-dark .logo-brand-prop {
-  color: #38BDF8;
-}
-
-.logo-dark .logo-brand-sub {
-  color: #94A3B8;
-}
-
-.logo-dark .logo-img {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.logo-large .brand-official-logo {
+  height: 64px;
 }
