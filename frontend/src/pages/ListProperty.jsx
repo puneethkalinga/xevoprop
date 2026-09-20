@@ -12,6 +12,13 @@ import {
   X,
 } from "lucide-react";
 
+import {
+  REAL_ESTATE_STATES,
+  CITIES_BY_STATE,
+  USAGE_TYPES,
+  PROPERTY_TYPES,
+  BUDGET_PRESETS,
+} from "../data/locationAndTypes";
 import "./ListProperty.css";
 
 function ListProperty() {
@@ -27,8 +34,10 @@ function ListProperty() {
   const [form, setForm] = useState({
     title: "",
     type: "Apartment",
-    location: "",
-    city: "",
+    usage_type: "Investment",
+    state: "Telegana",
+    city: "Hyderabad",
+    location: "All",
     price: "",
     price_value: "",
     bedrooms: "",
@@ -36,8 +45,8 @@ function ListProperty() {
     area: "",
     description: "",
 
-    verified: false,
-    ready_to_move: false,
+    verified: true,
+    ready_to_move: true,
     zero_brokerage: false,
   });
 
@@ -68,6 +77,24 @@ function ListProperty() {
         type === "checkbox"
           ? checked
           : value,
+    }));
+  };
+
+  const handleStateChange = (e) => {
+    const selectedState = e.target.value;
+    const cities = CITIES_BY_STATE[selectedState] || [];
+    setForm((previous) => ({
+      ...previous,
+      state: selectedState,
+      city: cities[0] || "",
+    }));
+  };
+
+  const handleBudgetPreset = (preset) => {
+    setForm((previous) => ({
+      ...previous,
+      price: preset.priceText,
+      price_value: String(preset.value),
     }));
   };
 
@@ -487,26 +514,55 @@ function ListProperty() {
             name="type"
             value={form.type}
             onChange={handleChange}
+            required
           >
-            <option value="Apartment">
-              Apartment
-            </option>
+            {PROPERTY_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
 
-            <option value="Villa">
-              Villa
-            </option>
+        </div>
 
-            <option value="Independent House">
-              Independent House
-            </option>
+        <div className="listing-field">
 
-            <option value="Plot">
-              Plot
-            </option>
+          <label>
+            USAGE TYPE
+          </label>
 
-            <option value="Commercial">
-              Commercial
-            </option>
+          <select
+            name="usage_type"
+            value={form.usage_type}
+            onChange={handleChange}
+            required
+          >
+            {USAGE_TYPES.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+
+        </div>
+
+        <div className="listing-field">
+
+          <label>
+            STATE
+          </label>
+
+          <select
+            name="state"
+            value={form.state}
+            onChange={handleStateChange}
+            required
+          >
+            {REAL_ESTATE_STATES.map((s) => (
+              <option key={s.name} value={s.name}>
+                {s.name}
+              </option>
+            ))}
           </select>
 
         </div>
@@ -521,13 +577,18 @@ function ListProperty() {
 
             <MapPin size={15} />
 
-            <input
-              type="text"
+            <select
               name="city"
-              placeholder="Hyderabad"
               value={form.city}
               onChange={handleChange}
-            />
+              required
+            >
+              {(CITIES_BY_STATE[form.state] || []).map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
 
           </div>
 
@@ -536,7 +597,7 @@ function ListProperty() {
         <div className="listing-field full">
 
           <label>
-            LOCATION
+            LOCATION / LOCALITY
           </label>
 
           <div className="input-with-icon">
@@ -546,11 +607,26 @@ function ListProperty() {
             <input
               type="text"
               name="location"
-              placeholder="Gachibowli, Hyderabad"
+              placeholder="e.g. All, Gachibowli, Bandra, Whitefield..."
               value={form.location}
               onChange={handleChange}
+              required
             />
 
+          </div>
+
+          <div className="preset-chips">
+            <span className="preset-label">Quick select:</span>
+            {["All", "Gachibowli", "Financial District", "Bandra", "Whitefield"].map((loc) => (
+              <button
+                type="button"
+                key={loc}
+                className={`preset-chip-btn ${form.location === loc ? "active" : ""}`}
+                onClick={() => setForm((prev) => ({ ...prev, location: loc }))}
+              >
+                {loc}
+              </button>
+            ))}
           </div>
 
         </div>
@@ -589,10 +665,10 @@ function ListProperty() {
 
       <div className="listing-fields">
 
-        <div className="listing-field">
+        <div className="listing-field full">
 
           <label>
-            DISPLAY PRICE
+            BUDGET / DISPLAY PRICE
           </label>
 
           <div className="input-with-icon">
@@ -609,12 +685,26 @@ function ListProperty() {
 
           </div>
 
+          <div className="preset-chips">
+            <span className="preset-label">Budget presets:</span>
+            {BUDGET_PRESETS.map((p) => (
+              <button
+                type="button"
+                key={p.label}
+                className={`preset-chip-btn ${form.price === p.priceText ? "active" : ""}`}
+                onClick={() => handleBudgetPreset(p)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
         </div>
 
         <div className="listing-field">
 
           <label>
-            PRICE VALUE
+            PRICE VALUE (NUMERIC ₹)
           </label>
 
           <input

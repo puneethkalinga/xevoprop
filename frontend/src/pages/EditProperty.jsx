@@ -14,6 +14,13 @@ import {
   Trash2,
 } from "lucide-react";
 
+import {
+  REAL_ESTATE_STATES,
+  CITIES_BY_STATE,
+  USAGE_TYPES,
+  PROPERTY_TYPES,
+  BUDGET_PRESETS,
+} from "../data/locationAndTypes";
 import "./ListProperty.css";
 
 function EditProperty() {
@@ -34,8 +41,10 @@ function EditProperty() {
   const [form, setForm] = useState({
     title: "",
     type: "Apartment",
-    location: "",
-    city: "",
+    usage_type: "Investment",
+    state: "Telegana",
+    city: "Hyderabad",
+    location: "All",
     price: "",
     price_value: "",
     bedrooms: "",
@@ -110,8 +119,10 @@ function EditProperty() {
       setForm({
         title: property.title || "",
         type: property.type || "Apartment",
-        location: property.location || "",
-        city: property.city || "",
+        usage_type: property.usage_type || "Investment",
+        state: property.state || "Telegana",
+        city: property.city || "Hyderabad",
+        location: property.location || "All",
         price: property.price || "",
         price_value:
           property.price_value ?? "",
@@ -193,6 +204,24 @@ function EditProperty() {
         type === "checkbox"
           ? checked
           : value,
+    }));
+  };
+
+  const handleStateChange = (e) => {
+    const selectedState = e.target.value;
+    const cities = CITIES_BY_STATE[selectedState] || [];
+    setForm((previous) => ({
+      ...previous,
+      state: selectedState,
+      city: cities[0] || "",
+    }));
+  };
+
+  const handleBudgetPreset = (preset) => {
+    setForm((previous) => ({
+      ...previous,
+      price: preset.priceText,
+      price_value: String(preset.value),
     }));
   };
 
@@ -926,29 +955,60 @@ function EditProperty() {
               <select
                 name="type"
                 value={form.type}
-                onChange={
-                  handleChange
-                }
+                onChange={handleChange}
+                required
               >
-                <option value="Apartment">
-                  Apartment
-                </option>
+                {PROPERTY_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
 
-                <option value="Villa">
-                  Villa
-                </option>
+            </div>
 
-                <option value="Independent House">
-                  Independent House
-                </option>
+            {/* USAGE TYPE */}
 
-                <option value="Plot">
-                  Plot
-                </option>
+            <div className="listing-field">
 
-                <option value="Commercial">
-                  Commercial
-                </option>
+              <label>
+                USAGE TYPE
+              </label>
+
+              <select
+                name="usage_type"
+                value={form.usage_type}
+                onChange={handleChange}
+                required
+              >
+                {USAGE_TYPES.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+
+            </div>
+
+            {/* STATE */}
+
+            <div className="listing-field">
+
+              <label>
+                STATE
+              </label>
+
+              <select
+                name="state"
+                value={form.state}
+                onChange={handleStateChange}
+                required
+              >
+                {REAL_ESTATE_STATES.map((s) => (
+                  <option key={s.name} value={s.name}>
+                    {s.name}
+                  </option>
+                ))}
               </select>
 
             </div>
@@ -965,14 +1025,18 @@ function EditProperty() {
 
                 <MapPin size={15} />
 
-                <input
-                  type="text"
+                <select
                   name="city"
                   value={form.city}
-                  onChange={
-                    handleChange
-                  }
-                />
+                  onChange={handleChange}
+                  required
+                >
+                  {(CITIES_BY_STATE[form.state] || []).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
 
               </div>
 
@@ -983,7 +1047,7 @@ function EditProperty() {
             <div className="listing-field full">
 
               <label>
-                LOCATION
+                LOCATION / LOCALITY
               </label>
 
               <div className="input-with-icon">
@@ -993,24 +1057,36 @@ function EditProperty() {
                 <input
                   type="text"
                   name="location"
-                  value={
-                    form.location
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  placeholder="e.g. All, Gachibowli, Bandra, Whitefield..."
+                  value={form.location}
+                  onChange={handleChange}
+                  required
                 />
 
+              </div>
+
+              <div className="preset-chips">
+                <span className="preset-label">Quick select:</span>
+                {["All", "Gachibowli", "Financial District", "Bandra", "Whitefield"].map((loc) => (
+                  <button
+                    type="button"
+                    key={loc}
+                    className={`preset-chip-btn ${form.location === loc ? "active" : ""}`}
+                    onClick={() => setForm((prev) => ({ ...prev, location: loc }))}
+                  >
+                    {loc}
+                  </button>
+                ))}
               </div>
 
             </div>
 
             {/* PRICE */}
 
-            <div className="listing-field">
+            <div className="listing-field full">
 
               <label>
-                DISPLAY PRICE
+                BUDGET / DISPLAY PRICE
               </label>
 
               <div className="input-with-icon">
@@ -1020,12 +1096,25 @@ function EditProperty() {
                 <input
                   type="text"
                   name="price"
+                  placeholder="₹1.25 Cr"
                   value={form.price}
-                  onChange={
-                    handleChange
-                  }
+                  onChange={handleChange}
                 />
 
+              </div>
+
+              <div className="preset-chips">
+                <span className="preset-label">Budget presets:</span>
+                {BUDGET_PRESETS.map((p) => (
+                  <button
+                    type="button"
+                    key={p.label}
+                    className={`preset-chip-btn ${form.price === p.priceText ? "active" : ""}`}
+                    onClick={() => handleBudgetPreset(p)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
               </div>
 
             </div>
@@ -1035,18 +1124,14 @@ function EditProperty() {
             <div className="listing-field">
 
               <label>
-                PRICE VALUE
+                PRICE VALUE (NUMERIC ₹)
               </label>
 
               <input
                 type="number"
                 name="price_value"
-                value={
-                  form.price_value
-                }
-                onChange={
-                  handleChange
-                }
+                value={form.price_value}
+                onChange={handleChange}
               />
 
             </div>

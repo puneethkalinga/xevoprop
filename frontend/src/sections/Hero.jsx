@@ -47,29 +47,34 @@ function Hero() {
   };
 
   const quickHotspots = [
-    { label: "Financial District", query: "Financial District, Hyderabad" },
-    { label: "Hitec City", query: "Hitec City, Hyderabad" },
-    { label: "Jubilee Hills", query: "Jubilee Hills, Hyderabad" },
-    { label: "Gachibowli", query: "Gachibowli, Hyderabad" },
-    { label: "Whitefield (BLR)", query: "Whitefield, Bengaluru" },
+    { label: "Hyderabad", query: "Hyderabad" },
+    { label: "Nizamabad", query: "Nizamabad" },
+    { label: "Mumbai", query: "Mumbai" },
+    { label: "Pune", query: "Pune" },
+    { label: "Thane", query: "Thane" },
+    { label: "Sambhaji Nagar", query: "Sambhaji Nagar" },
+    { label: "Banglore", query: "Banglore" },
+    { label: "Manglore", query: "Manglore" },
   ];
 
   const propertyOptions = [
     { value: "", label: "All Property Types" },
-    { value: "apartment", label: "Apartments & Flats" },
-    { value: "villa", label: "Villas & Gated Communities" },
-    { value: "house", label: "Independent Houses" },
-    { value: "commercial", label: "Commercial Office Spaces" },
-    { value: "plot", label: "Residential Plots" },
+    { value: "apartment", label: "Apartment" },
+    { value: "house", label: "House" },
+    { value: "villa", label: "Villa" },
+    { value: "plot", label: "Plot" },
+    { value: "commercial", label: "Commercial" },
   ];
 
   const budgetOptions = [
     { value: "", label: "Any Budget" },
-    { value: "0-5000000", label: "Under ₹50 Lakh" },
-    { value: "5000000-10000000", label: "₹50L – ₹1 Crore" },
-    { value: "10000000-25000000", label: "₹1 Cr – ₹2.5 Cr" },
-    { value: "25000000-50000000", label: "₹2.5 Cr – ₹5 Cr" },
-    { value: "50000000+", label: "Above ₹5 Crore" },
+    { value: "2500000", label: "25 Lakh" },
+    { value: "5000000", label: "50 Lakh" },
+    { value: "7500000", label: "75 Lakh" },
+    { value: "10000000", label: "1 CR" },
+    { value: "15000000", label: "1.5 CR" },
+    { value: "20000000", label: "2 CR" },
+    { value: "30000000", label: "3 CR" },
   ];
 
   return (

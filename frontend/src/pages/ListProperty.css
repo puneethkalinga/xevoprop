@@ -320,7 +320,8 @@
   pointer-events: none;
 }
 
-.input-with-icon input {
+.input-with-icon input,
+.input-with-icon select {
   padding-left: 38px;
 }
 
@@ -863,4 +864,55 @@
     min-height: 40px;
     font-size: 9px;
   }
+}
+
+/* =========================================================
+   PRESET CHIPS (BUDGET, LOCATIONS)
+   ========================================================= */
+
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.preset-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 2px;
+}
+
+.preset-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 11px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.preset-chip-btn:hover {
+  background: #EFF6FF;
+  border-color: #93C5FD;
+  color: #1E40AF;
+  transform: translateY(-1px);
+}
+
+.preset-chip-btn.active {
+  background: #1E40AF;
+  border-color: #1E40AF;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.25);
 }

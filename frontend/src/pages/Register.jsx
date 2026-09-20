@@ -390,14 +390,18 @@ function Register() {
           <div className="role-group">
             <div className="role-title">Account Type</div>
             <div className="role-grid">
-              {["Buyer", "Seller", "Developer"].map((item) => (
+              {[
+                { label: "Buyer", value: "Buyer" },
+                { label: "Seller", value: "Seller" },
+                { label: "Builder / Developer", value: "Developer" },
+              ].map((item) => (
                 <button
                   type="button"
-                  key={item}
-                  className={`role-option ${role === item ? "active" : ""}`}
-                  onClick={() => setRole(item)}
+                  key={item.value}
+                  className={`role-option ${role === item.value ? "active" : ""}`}
+                  onClick={() => setRole(item.value)}
                 >
-                  {item}
+                  {item.label}
                 </button>
               ))}
             </div>

@@ -51,12 +51,13 @@ function Navbar() {
     { label: "Leads", path: "/leads" },
   ];
 
-  /* DEVELOPER NAVIGATION */
+  /* DEVELOPER / BUILDER NAVIGATION */
   const developerLinks = [
     { label: "Properties", path: "/properties" },
     { label: "Projects", path: "/projects" },
     { label: "My Projects", path: "/my-projects" },
     { label: "Add Project", path: "/add-project" },
+    { label: "List Property", path: "/list-property" },
     { label: "Leads", path: "/leads" },
   ];
 
@@ -64,7 +65,7 @@ function Navbar() {
   if (user) {
     const role = user.role || "Buyer";
     if (role === "Seller") navLinks = sellerLinks;
-    else if (role === "Developer") navLinks = developerLinks;
+    else if (role === "Developer" || role === "Builder") navLinks = developerLinks;
     else navLinks = buyerLinks;
   }
 

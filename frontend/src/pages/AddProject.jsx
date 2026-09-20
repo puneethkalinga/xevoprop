@@ -8,6 +8,13 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  REAL_ESTATE_STATES,
+  CITIES_BY_STATE,
+  USAGE_TYPES,
+  PROPERTY_TYPES,
+  BUDGET_PRESETS,
+} from "../data/locationAndTypes";
 import "./AddProject.css";
 
 const API_URL =
@@ -20,10 +27,11 @@ function AddProject() {
 
   const [formData, setFormData] = useState({
     name: "",
-    location: "",
-    city: "",
-    state: "",
+    location: "All",
+    city: "Hyderabad",
+    state: "Telegana",
     type: "Apartment",
+    usage_type: "Investment",
     units: "",
     price: "",
     description: "",
@@ -42,6 +50,23 @@ function AddProject() {
     setFormData((previous) => ({
       ...previous,
       [name]: value,
+    }));
+  };
+
+  const handleStateChange = (e) => {
+    const selectedState = e.target.value;
+    const cities = CITIES_BY_STATE[selectedState] || [];
+    setFormData((previous) => ({
+      ...previous,
+      state: selectedState,
+      city: cities[0] || "",
+    }));
+  };
+
+  const handleBudgetPreset = (preset) => {
+    setFormData((previous) => ({
+      ...previous,
+      price: preset.priceText,
     }));
   };
 
@@ -300,7 +325,7 @@ function AddProject() {
 
               <div className="project-form-group">
                 <label>
-                  Project type
+                  Property Type
                   <span>*</span>
                 </label>
 
@@ -310,21 +335,31 @@ function AddProject() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="Apartment">
-                    Apartment
-                  </option>
-                  <option value="Villa">
-                    Villa
-                  </option>
-                  <option value="Plot">
-                    Plot
-                  </option>
-                  <option value="Commercial">
-                    Commercial
-                  </option>
-                  <option value="House">
-                    House
-                  </option>
+                  {PROPERTY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="project-form-group">
+                <label>
+                  Usage Type
+                  <span>*</span>
+                </label>
+
+                <select
+                  name="usage_type"
+                  value={formData.usage_type}
+                  onChange={handleChange}
+                  required
+                >
+                  {USAGE_TYPES.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -366,16 +401,56 @@ function AddProject() {
               <div>
                 <h2>Project location</h2>
                 <p>
-                  Where is the project located?
+                  Specify the state, city, and locality.
                 </p>
               </div>
             </div>
 
             <div className="project-form-grid">
 
+              <div className="project-form-group">
+                <label>
+                  State
+                  <span>*</span>
+                </label>
+
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleStateChange}
+                  required
+                >
+                  {REAL_ESTATE_STATES.map((s) => (
+                    <option key={s.name} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="project-form-group">
+                <label>
+                  City
+                  <span>*</span>
+                </label>
+
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                >
+                  {(CITIES_BY_STATE[formData.state] || []).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="project-form-group full">
                 <label>
-                  Location
+                  Location / Locality
                   <span>*</span>
                 </label>
 
@@ -384,33 +459,23 @@ function AddProject() {
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  placeholder="e.g. Gachibowli"
+                  placeholder="e.g. All, Gachibowli, Bandra, Whitefield..."
                   required
                 />
-              </div>
 
-              <div className="project-form-group">
-                <label>City</label>
-
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  placeholder="e.g. Hyderabad"
-                />
-              </div>
-
-              <div className="project-form-group">
-                <label>State</label>
-
-                <input
-                  type="text"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  placeholder="e.g. Telangana"
-                />
+                <div className="preset-chips">
+                  <span className="preset-label">Quick select:</span>
+                  {["All", "Gachibowli", "Financial District", "Bandra", "Whitefield"].map((loc) => (
+                    <button
+                      type="button"
+                      key={loc}
+                      className={`preset-chip-btn ${formData.location === loc ? "active" : ""}`}
+                      onClick={() => setFormData((prev) => ({ ...prev, location: loc }))}
+                    >
+                      {loc}
+                    </button>
+                  ))}
+                </div>
               </div>
 
             </div>
@@ -447,15 +512,29 @@ function AddProject() {
               </div>
 
               <div className="project-form-group">
-                <label>Price</label>
+                <label>Budget / Price</label>
 
                 <input
                   type="text"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
-                  placeholder="e.g. ₹65 Lakhs onwards"
+                  placeholder="e.g. ₹75 Lakh onwards"
                 />
+
+                <div className="preset-chips">
+                  <span className="preset-label">Budget presets:</span>
+                  {BUDGET_PRESETS.map((p) => (
+                    <button
+                      type="button"
+                      key={p.label}
+                      className={`preset-chip-btn ${formData.price === p.priceText ? "active" : ""}`}
+                      onClick={() => handleBudgetPreset(p)}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* IMAGE UPLOAD */}
