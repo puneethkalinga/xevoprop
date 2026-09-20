@@ -89,8 +89,12 @@ function Footer() {
         <div className="footer-exact-grid">
           {/* COLUMN 1: BRAND */}
           <div className="footer-col-brand">
-            <Link to="/" className="footer-brand-logo-link" style={{ textDecoration: "none" }}>
-              <LogoWordmark size="default" variant="dark" />
+            <Link to="/" className="footer-brand-logo-link">
+              <img
+                src="/xevoprop-logo.png"
+                alt="XevopropTech Pvt Ltd"
+                className="footer-brand-logo"
+              />
             </Link>
 
             <p className="footer-brand-desc">
