@@ -11,9 +11,9 @@ export function LogoImage({ className = "logo-img", size = 36 }) {
   );
 }
 
-export function LogoWordmark({ size = "default", showSubtitle = true }) {
+export function LogoWordmark({ size = "default", showSubtitle = true, variant = "light" }) {
   return (
-    <div className={`logo-wordmark logo-${size}`}>
+    <div className={`logo-wordmark logo-${size} logo-${variant}`}>
       <LogoImage size={size === "small" ? 28 : size === "large" ? 44 : 36} />
       <div className="logo-text-group">
         <div className="logo-brand-name">

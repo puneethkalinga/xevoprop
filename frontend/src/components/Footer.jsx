@@ -13,7 +13,9 @@ import {
   LinkedInIcon,
   FacebookIcon,
   YoutubeIcon,
+  TwitterXIcon,
 } from "./SocialIcons";
+import { LogoWordmark } from "./Logo";
 import "./Footer.css";
 
 function Footer() {
@@ -87,12 +89,8 @@ function Footer() {
         <div className="footer-exact-grid">
           {/* COLUMN 1: BRAND */}
           <div className="footer-col-brand">
-            <Link to="/" className="footer-brand-logo-link">
-              <img
-                src="/xevoprop-logo.png"
-                alt="XevopropTech Pvt Ltd"
-                className="footer-brand-logo"
-              />
+            <Link to="/" className="footer-brand-logo-link" style={{ textDecoration: "none" }}>
+              <LogoWordmark size="default" variant="dark" />
             </Link>
 
             <p className="footer-brand-desc">
@@ -115,14 +113,14 @@ function Footer() {
               </a>
 
               <a
-                href="https://xevotech.in/"
+                href="https://twitter.com/xevotech"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Website"
-                title="Visit Xevotech Website"
+                aria-label="Twitter / X"
+                title="Follow Xevotech on X"
                 className="social-tile"
               >
-                <Globe size={15} />
+                <TwitterXIcon size={14} />
               </a>
 
               <a
