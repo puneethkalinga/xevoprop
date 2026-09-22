@@ -1211,3 +1211,345 @@
 .project-clear-btn:hover {
   background: #fee2e2;
 }
+
+/* =========================================================
+   03: AGREEMENT & AUTHORIZATION SECTION
+========================================================= */
+
+.agreement-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.agreement-document-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agreement-document-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.agreement-doc-icon-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.agreement-doc-icon {
+  color: #2563eb;
+}
+
+.agreement-doc-info {
+  flex: 1;
+}
+
+.agreement-doc-info h3 {
+  margin: 0 0 3px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.agreement-doc-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.agreement-doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.agreement-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agreement-action-btn.secondary {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.agreement-action-btn.secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.agreement-action-btn.primary {
+  background: #2563eb;
+  border: 1px solid #2563eb;
+  color: #ffffff;
+}
+
+.agreement-action-btn.primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+/* Agreement Dropzone */
+.agreement-dropzone {
+  width: 100%;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 28px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.agreement-dropzone:hover {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.agreement-dropzone.has-file {
+  border-style: solid;
+  border-color: #86efac;
+  background: #f0fdf4;
+  padding: 16px 20px;
+  cursor: default;
+}
+
+.dropzone-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.dropzone-icon-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.dropzone-empty-state strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.dropzone-hint {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.dropzone-browse-btn {
+  margin-top: 10px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dropzone-browse-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Selected File Pill */
+.dropzone-file-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.file-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-success-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #dcfce7;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-details .file-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.file-details .file-meta {
+  font-size: 12px;
+  color: #15803d;
+}
+
+.file-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #bbf7d0;
+}
+
+.file-remove-btn {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  border-radius: 7px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.file-remove-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+/* Declarations */
+.agreement-declarations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.declaration-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.declaration-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.declaration-text {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.declaration-text strong {
+  color: #0f172a;
+}
+
+/* Policy Note */
+.agreement-policy-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.policy-icon {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+/* Submit Wrapper & Disabled Hint */
+.submit-btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.project-create-btn.disabled-btn {
+  background: #cbd5e1 !important;
+  color: #64748b !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.8 !important;
+  transform: none !important;
+}
+
+.submit-requirement-hint {
+  font-size: 11.5px;
+  color: #64748b;
+  max-width: 440px;
+  text-align: right;
+  margin: 0;
+  line-height: 1.35;
+}

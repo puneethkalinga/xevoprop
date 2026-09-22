@@ -377,3 +377,245 @@ export function updatePasswordInStore(userIdOrEmail, newPassword) {
   return false;
 }
 
+const PROJECTS_SUBMISSION_STORAGE_KEY = "xevoprop_project_submissions";
+const NOTIFICATIONS_STORAGE_KEY = "xevoprop_admin_notifications";
+
+const INITIAL_PROJECT_SUBMISSIONS = [
+  {
+    id: "proj_sub_1727001",
+    name: "SB Urban Heights",
+    location: "Financial District, Nanakramguda, Hyderabad",
+    city: "Hyderabad",
+    state: "Telangana",
+    type: "Apartment",
+    usage_type: "Residential",
+    units: 140,
+    price: "₹1.45 Cr onwards",
+    description: "Ultra-luxury high-rise residences with panoramic views, sky lounge, infinity pool, and EV charging stations.",
+    builderId: 46,
+    builderName: "SB Infra",
+    builderEmail: "info@sbinfra.com",
+    builderCompany: "SB Infra Group",
+    builderPhone: "9876543210",
+    status: "pending_approval",
+    submittedAt: "2026-09-22T14:20:00.000Z",
+    reviewedAt: null,
+    reviewedBy: null,
+    rejectionReason: null,
+    agreement: {
+      fileName: "Builder_Listing_Commission_Agreement_SBInfra_Signed.docx",
+      fileSize: "2.4 MB",
+      uploadedAt: "2026-09-22T14:18:30.000Z",
+      status: "digitally_signed",
+      declarations: {
+        readAndAgreed: true,
+        infoAccurate: true,
+        authorized: true,
+      },
+      fileDataUrl: "/documents/Builder_Listing_Commission_Agreementfinal.docx",
+    },
+    images: [
+      {
+        id: "img_1",
+        url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+        name: "Elevation Perspective.jpg",
+      },
+      {
+        id: "img_2",
+        url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
+        name: "Clubhouse and Courtyard.jpg",
+      },
+    ],
+  },
+];
+
+export function getStoredProjectSubmissions() {
+  try {
+    const raw = localStorage.getItem(PROJECTS_SUBMISSION_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(PROJECTS_SUBMISSION_STORAGE_KEY, JSON.stringify(INITIAL_PROJECT_SUBMISSIONS));
+      return INITIAL_PROJECT_SUBMISSIONS;
+    }
+    return JSON.parse(raw);
+  } catch {
+    return INITIAL_PROJECT_SUBMISSIONS;
+  }
+}
+
+export function saveStoredProjectSubmissions(submissions) {
+  try {
+    localStorage.setItem(PROJECTS_SUBMISSION_STORAGE_KEY, JSON.stringify(submissions));
+  } catch (err) {
+    console.error("Failed to save project submissions:", err);
+  }
+}
+
+export function submitProjectWithAgreement({
+  name,
+  location,
+  city,
+  state,
+  type,
+  units,
+  price,
+  description,
+  images = [],
+  builder,
+  agreementFile,
+  declarations,
+}) {
+  const submissions = getStoredProjectSubmissions();
+  const newSubmission = {
+    id: "proj_sub_" + Date.now(),
+    name: name.trim(),
+    location: location.trim(),
+    city: city || "Hyderabad",
+    state: state || "Telangana",
+    type: type || "Apartment",
+    units: units ? Number(units) : null,
+    price: price ? price.trim() : null,
+    description: description ? description.trim() : null,
+    builderId: builder?.id || 46,
+    builderName: builder?.name || "Registered Builder",
+    builderEmail: builder?.email || "builder@xevoprop.com",
+    builderCompany: builder?.company || builder?.name || "Development Partner",
+    builderPhone: builder?.phone || "",
+    status: "pending_approval",
+    submittedAt: new Date().toISOString(),
+    reviewedAt: null,
+    reviewedBy: null,
+    rejectionReason: null,
+    agreement: {
+      fileName: agreementFile?.name || "Digitally_Signed_Agreement.docx",
+      fileSize: agreementFile?.size ? (agreementFile.size / (1024 * 1024)).toFixed(2) + " MB" : "1.2 MB",
+      uploadedAt: new Date().toISOString(),
+      status: "digitally_signed",
+      declarations: {
+        readAndAgreed: !!declarations?.readAndAgreed,
+        infoAccurate: !!declarations?.infoAccurate,
+        authorized: !!declarations?.authorized,
+      },
+      fileDataUrl: agreementFile?.dataUrl || "/documents/Builder_Listing_Commission_Agreementfinal.docx",
+    },
+    images: images.map((img, i) => ({
+      id: img.id || "img_" + i,
+      url: img.preview || img.url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+      name: img.file?.name || `Project_Photo_${i + 1}.jpg`,
+    })),
+  };
+
+  const updated = [newSubmission, ...submissions];
+  saveStoredProjectSubmissions(updated);
+
+  // 1. Audit log
+  recordAccessLog({
+    user: builder,
+    status: "BLOCKED_PENDING",
+    action: `Project Listing Submitted with Signed Agreement: "${newSubmission.name}" by ${newSubmission.builderName} — Awaiting Admin Approval`,
+  });
+
+  // 2. High-priority notification for Admin
+  addAdminNotification({
+    title: "New Project & Signed Agreement Submitted",
+    message: `${newSubmission.builderName} (${newSubmission.builderCompany}) uploaded project "${newSubmission.name}" with digitally signed Builder Listing & Commission Agreement. Awaiting your review & approval.`,
+    type: "agreement_submission",
+    reference_id: newSubmission.id,
+    builderName: newSubmission.builderName,
+    projectName: newSubmission.name,
+  });
+
+  return newSubmission;
+}
+
+export function approveProjectSubmission(submissionId, adminName = "Xevoproptech Admin") {
+  const submissions = getStoredProjectSubmissions();
+  const sub = submissions.find((s) => s.id === submissionId);
+  if (!sub) throw new Error("Project submission not found");
+
+  sub.status = "approved";
+  sub.reviewedAt = new Date().toISOString();
+  sub.reviewedBy = adminName;
+  if (sub.agreement) sub.agreement.status = "verified_and_approved";
+
+  saveStoredProjectSubmissions(submissions);
+
+  recordAccessLog({
+    user: { name: adminName, role: "Admin", email: "admin.xevoproptech@gmail.com" },
+    status: "SUCCESS",
+    action: `Admin Approved Project & Agreement: "${sub.name}" by ${sub.builderName} (${sub.builderCompany}) — Now Live!`,
+  });
+
+  addAdminNotification({
+    title: "Project & Agreement Approved",
+    message: `Your project "${sub.name}" and digitally signed agreement have been officially approved by ${adminName}. The project is now live on Xevoprop!`,
+    type: "project_approved",
+    reference_id: sub.id,
+    targetUserId: sub.builderId,
+  });
+
+  return sub;
+}
+
+export function rejectProjectSubmission(submissionId, reason = "Information or agreement verification incomplete", adminName = "Xevoproptech Admin") {
+  const submissions = getStoredProjectSubmissions();
+  const sub = submissions.find((s) => s.id === submissionId);
+  if (!sub) throw new Error("Project submission not found");
+
+  sub.status = "rejected";
+  sub.reviewedAt = new Date().toISOString();
+  sub.reviewedBy = adminName;
+  sub.rejectionReason = reason;
+
+  saveStoredProjectSubmissions(submissions);
+
+  recordAccessLog({
+    user: { name: adminName, role: "Admin", email: "admin.xevoproptech@gmail.com" },
+    status: "FAILED",
+    action: `Admin Rejected Project Listing: "${sub.name}" by ${sub.builderName} (Reason: ${reason})`,
+  });
+
+  addAdminNotification({
+    title: "Project Submission Revision Requested",
+    message: `Your project "${sub.name}" listing could not be approved: ${reason}. Please update your details and resubmit.`,
+    type: "project_rejected",
+    reference_id: sub.id,
+    targetUserId: sub.builderId,
+  });
+
+  return sub;
+}
+
+export function getStoredNotifications() {
+  try {
+    const raw = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+export function addAdminNotification({ title, message, type = "system", reference_id, builderName, projectName, targetUserId }) {
+  const notifs = getStoredNotifications();
+  const newNotif = {
+    id: "notif_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+    title,
+    message,
+    type,
+    reference_id,
+    builderName,
+    projectName,
+    targetUserId,
+    created_at: new Date().toISOString(),
+    read_at: null,
+  };
+  const updated = [newNotif, ...notifs];
+  try {
+    localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(updated.slice(0, 100)));
+  } catch (err) {
+    console.error("Failed to save notification:", err);
+  }
+  return newNotif;
+}
+
+

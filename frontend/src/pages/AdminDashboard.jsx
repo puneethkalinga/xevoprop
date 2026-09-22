@@ -24,15 +24,25 @@ import {
   ShieldAlert,
   UserCheck,
   Sparkles,
+  FileText,
+  Download,
+  Eye,
+  Bell,
+  CheckSquare,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import AgreementViewerModal from "../components/AgreementViewerModal";
 import {
   getStoredUsers,
   approveUser,
   rejectUser,
   getStoredAccessLogs,
   recordAccessLog,
+  getStoredProjectSubmissions,
+  approveProjectSubmission,
+  rejectProjectSubmission,
+  getStoredNotifications,
 } from "../lib/adminStore";
 import { vilvaProjects } from "../data/vilvaProjects";
 import { sbInfraVentures } from "../data/sbInfraProjects";
@@ -44,8 +54,12 @@ export default function AdminDashboard() {
 
   const [users, setUsers] = useState([]);
   const [accessLogs, setAccessLogs] = useState([]);
-  const [activeTab, setActiveTab] = useState("approvals"); // "approvals" | "audit" | "content"
+  const [projectSubmissions, setProjectSubmissions] = useState([]);
+  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("approvals"); // "approvals" | "submissions" | "audit" | "content"
   const [userFilter, setUserFilter] = useState("pending"); // "all" | "pending" | "approved" | "rejected" | "developer"
+  const [projectFilter, setProjectFilter] = useState("pending"); // "all" | "pending" | "approved" | "rejected"
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState("");
 
@@ -60,8 +74,12 @@ export default function AdminDashboard() {
   const loadData = () => {
     const loadedUsers = getStoredUsers();
     const loadedLogs = getStoredAccessLogs();
+    const loadedSubmissions = getStoredProjectSubmissions();
+    const loadedNotifications = getStoredNotifications();
     setUsers(loadedUsers);
     setAccessLogs(loadedLogs);
+    setProjectSubmissions(loadedSubmissions);
+    setAdminNotifications(loadedNotifications);
   };
 
   const showNotification = (msg) => {
@@ -93,6 +111,38 @@ export default function AdminDashboard() {
     }
   };
 
+  // Project submission actions
+  const handleApproveProject = (submissionId) => {
+    try {
+      const updated = approveProjectSubmission(submissionId, user?.name || "Xevoproptech Admin");
+      loadData();
+      showNotification(`✅ Approved project "${updated.name}" & verified signed agreement. Project is now live!`);
+    } catch (err) {
+      alert("Error approving project: " + err.message);
+    }
+  };
+
+  const handleRejectProject = (submissionId) => {
+    const reason = window.prompt("Reason for rejecting or requesting revision:", "Incomplete documentation or agreement details");
+    if (reason === null) return;
+    try {
+      const updated = rejectProjectSubmission(submissionId, reason, user?.name || "Xevoproptech Admin");
+      loadData();
+      showNotification(`❌ Project "${updated.name}" marked for revision.`);
+    } catch (err) {
+      alert("Error rejecting project: " + err.message);
+    }
+  };
+
+  const handleDownloadSignedDoc = (agreement) => {
+    const a = document.createElement("a");
+    a.href = agreement?.fileDataUrl || "/documents/Builder_Listing_Commission_Agreementfinal.docx";
+    a.download = agreement?.fileName || "Signed_Builder_Agreement.docx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -103,6 +153,7 @@ export default function AdminDashboard() {
   const approvedCount = users.filter((u) => u.status === "approved").length;
   const developerCount = users.filter((u) => u.role === "Developer" || u.role === "Builder").length;
   const totalLogsCount = accessLogs.length;
+  const pendingProjectsCount = projectSubmissions.filter((p) => p.status === "pending_approval").length;
 
   // Filtered users
   const filteredUsers = users.filter((u) => {
@@ -122,6 +173,24 @@ export default function AdminDashboard() {
     if (userFilter === "approved") return u.status === "approved";
     if (userFilter === "rejected") return u.status === "rejected";
     if (userFilter === "developer") return u.role === "Developer" || u.role === "Builder";
+    return true;
+  });
+
+  // Filtered project submissions
+  const filteredSubmissions = projectSubmissions.filter((p) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        p.name?.toLowerCase().includes(q) ||
+        p.builderName?.toLowerCase().includes(q) ||
+        p.builderCompany?.toLowerCase().includes(q) ||
+        p.location?.toLowerCase().includes(q) ||
+        p.type?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    if (projectFilter === "pending") return p.status === "pending_approval";
+    if (projectFilter === "approved") return p.status === "approved";
+    if (projectFilter === "rejected") return p.status === "rejected";
     return true;
   });
 
@@ -179,12 +248,30 @@ export default function AdminDashboard() {
               <Clock size={22} />
             </div>
             <div>
-              <span className="kpi-label">PENDING APPROVALS</span>
+              <span className="kpi-label">PENDING USER APPROVALS</span>
               <div className="kpi-value-row">
                 <span className="kpi-number">{pendingCount}</span>
                 {pendingCount > 0 && <span className="kpi-tag alert">Action Required</span>}
               </div>
               <p className="kpi-sub">Accounts awaiting verification before login access</p>
+            </div>
+          </div>
+
+          <div className="admin-kpi-card pending-kpi">
+            <div className="kpi-icon-wrap dev">
+              <FileText size={22} />
+            </div>
+            <div>
+              <span className="kpi-label">PROJECT SUBMISSIONS & AGREEMENTS</span>
+              <div className="kpi-value-row">
+                <span className="kpi-number">{pendingProjectsCount}</span>
+                {pendingProjectsCount > 0 ? (
+                  <span className="kpi-tag alert">Awaiting Review</span>
+                ) : (
+                  <span className="kpi-tag success">All Reviewed</span>
+                )}
+              </div>
+              <p className="kpi-sub">Signed agreements & listings awaiting admin approval</p>
             </div>
           </div>
 
@@ -199,20 +286,6 @@ export default function AdminDashboard() {
                 <span className="kpi-tag success">Verified</span>
               </div>
               <p className="kpi-sub">Permitted to publish projects, upload photos & brands</p>
-            </div>
-          </div>
-
-          <div className="admin-kpi-card">
-            <div className="kpi-icon-wrap dev">
-              <Building2 size={22} />
-            </div>
-            <div>
-              <span className="kpi-label">DEVELOPERS & BUILDERS</span>
-              <div className="kpi-value-row">
-                <span className="kpi-number">{developerCount}</span>
-                <span className="kpi-tag">SB Infra & Vilva</span>
-              </div>
-              <p className="kpi-sub">Authorized real estate development brands</p>
             </div>
           </div>
 
@@ -240,6 +313,15 @@ export default function AdminDashboard() {
             <Users size={16} />
             Account Approvals & Users
             {pendingCount > 0 && <span className="tab-counter-badge">{pendingCount}</span>}
+          </button>
+
+          <button
+            className={`admin-tab-btn ${activeTab === "submissions" ? "active" : ""}`}
+            onClick={() => setActiveTab("submissions")}
+          >
+            <FileText size={16} />
+            Project Submissions & Signed Agreements
+            {pendingProjectsCount > 0 && <span className="tab-counter-badge">{pendingProjectsCount}</span>}
           </button>
 
           <button
@@ -448,7 +530,287 @@ export default function AdminDashboard() {
           </section>
         )}
 
-        {/* TAB 2: LOGIN & ACCESS AUDIT LOGS */}
+        {/* TAB 2: PROJECT SUBMISSIONS & SIGNED AGREEMENTS */}
+        {activeTab === "submissions" && (
+          <section className="admin-content-section">
+            {/* ALERT NOTIFICATION BANNER */}
+            {pendingProjectsCount > 0 && (
+              <div className="admin-submission-alert-banner">
+                <Bell size={20} className="alert-bell-icon" />
+                <div className="alert-banner-content">
+                  <strong>
+                    {pendingProjectsCount} Project Listing{pendingProjectsCount > 1 ? "s" : ""} Awaiting Verification
+                  </strong>
+                  <p>
+                    Builders have submitted property listings along with their digitally signed Builder Listing & Commission Agreements.
+                    Review the project specifications, inspect the attached signed agreements, and authorize publication.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* TOOLBAR */}
+            <div className="admin-section-toolbar">
+              <div className="admin-search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search project by name, builder, location, or type..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="admin-filter-pills">
+                <button
+                  className={projectFilter === "pending" ? "active" : ""}
+                  onClick={() => setProjectFilter("pending")}
+                >
+                  ⏳ Pending Review ({pendingProjectsCount})
+                </button>
+                <button
+                  className={projectFilter === "approved" ? "active" : ""}
+                  onClick={() => setProjectFilter("approved")}
+                >
+                  ✅ Approved & Live ({projectSubmissions.filter((p) => p.status === "approved").length})
+                </button>
+                <button
+                  className={projectFilter === "rejected" ? "active" : ""}
+                  onClick={() => setProjectFilter("rejected")}
+                >
+                  ❌ Revision Required ({projectSubmissions.filter((p) => p.status === "rejected").length})
+                </button>
+                <button
+                  className={projectFilter === "all" ? "active" : ""}
+                  onClick={() => setProjectFilter("all")}
+                >
+                  All Submissions ({projectSubmissions.length})
+                </button>
+              </div>
+            </div>
+
+            {/* PROJECT SUBMISSION CARDS */}
+            {filteredSubmissions.length === 0 ? (
+              <div className="admin-empty-box">
+                <CheckCircle2 size={36} color="#16a34a" />
+                <h3>No Project Submissions Found</h3>
+                <p>There are no projects matching the selected filter criteria.</p>
+              </div>
+            ) : (
+              <div className="admin-submissions-list">
+                {filteredSubmissions.map((sub) => {
+                  const isPending = sub.status === "pending_approval";
+                  const isApproved = sub.status === "approved";
+                  const isRejected = sub.status === "rejected";
+
+                  return (
+                    <article key={sub.id} className={`admin-submission-card ${isPending ? "is-pending" : ""}`}>
+                      {/* CARD HEADER */}
+                      <div className="submission-card-header">
+                        <div className="sub-header-left">
+                          <span className="sub-builder-tag">
+                            <Building2 size={14} /> {sub.builderCompany || sub.builderName}
+                          </span>
+                          <span className="sub-type-badge">{sub.type}</span>
+                          <span className="sub-date">
+                            Submitted: {new Date(sub.submittedAt || Date.now()).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="sub-header-right">
+                          {isPending && (
+                            <span className="status-pill status-pending">
+                              <Clock size={13} /> Awaiting Admin Approval
+                            </span>
+                          )}
+                          {isApproved && (
+                            <span className="status-pill status-approved">
+                              <CheckCircle2 size={13} /> Approved & Live
+                            </span>
+                          )}
+                          {isRejected && (
+                            <span className="status-pill status-rejected">
+                              <XCircle size={13} /> Revision Requested
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CARD BODY */}
+                      <div className="submission-card-body">
+                        {/* LEFT: PROJECT OVERVIEW */}
+                        <div className="sub-project-overview">
+                          <h3 className="sub-project-title">{sub.name}</h3>
+
+                          <div className="sub-specs-row">
+                            <span className="sub-spec-item">
+                              <strong>Location:</strong> {sub.location || `${sub.city}, ${sub.state}`}
+                            </span>
+                            {sub.units && (
+                              <span className="sub-spec-item">
+                                <strong>Units:</strong> {sub.units} Units
+                              </span>
+                            )}
+                            {sub.price && (
+                              <span className="sub-spec-item">
+                                <strong>Price:</strong> {sub.price}
+                              </span>
+                            )}
+                          </div>
+
+                          {sub.description && (
+                            <p className="sub-description">{sub.description}</p>
+                          )}
+
+                          {/* MEDIA PREVIEW */}
+                          {sub.images && sub.images.length > 0 && (
+                            <div className="sub-media-section">
+                              <span className="sub-section-title">
+                                Uploaded Project Photos & Media ({sub.images.length})
+                              </span>
+                              <div className="sub-media-gallery">
+                                {sub.images.map((img, idx) => (
+                                  <div key={idx} className="sub-media-thumb">
+                                    <img src={img.url} alt={`Upload ${idx + 1}`} />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* RIGHT: SIGNED AGREEMENT & AUTHORIZATION BOX */}
+                        <div className="sub-agreement-review-box">
+                          <div className="sub-agreement-box-header">
+                            <div className="doc-icon-wrap">
+                              <FileCheck size={20} />
+                            </div>
+                            <div>
+                              <h4>Digitally Signed Agreement</h4>
+                              <p>Builder Listing & Commission Agreement</p>
+                            </div>
+                          </div>
+
+                          {/* ATTACHED FILE DETAILS */}
+                          <div className="sub-attached-doc-pill">
+                            <FileText size={18} className="doc-pill-icon" />
+                            <div className="doc-pill-meta">
+                              <span className="doc-pill-filename">
+                                {sub.agreement?.fileName || "Digitally_Signed_Agreement.docx"}
+                              </span>
+                              <span className="doc-pill-size">
+                                {sub.agreement?.fileSize || "1.5 MB"} · Digitally Signed Document
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* 3 VERIFIED DECLARATIONS */}
+                          <div className="sub-declarations-checklist">
+                            <div className="checklist-item verified">
+                              <CheckSquare size={15} />
+                              <span>Read & agreed to terms of Builder Commission Agreement</span>
+                            </div>
+                            <div className="checklist-item verified">
+                              <CheckSquare size={15} />
+                              <span>Confirmed all project info, pricing and specs are accurate</span>
+                            </div>
+                            <div className="checklist-item verified">
+                              <CheckSquare size={15} />
+                              <span>Confirmed authorized developer/representative to list</span>
+                            </div>
+                          </div>
+
+                          {/* DOCUMENT ACTIONS */}
+                          <div className="sub-doc-buttons">
+                            <button
+                              type="button"
+                              className="btn-read-agreement"
+                              onClick={() => setIsAgreementModalOpen(true)}
+                            >
+                              <Eye size={14} /> Read Agreement Text
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn-download-agreement"
+                              onClick={() => handleDownloadSignedDoc(sub.agreement)}
+                            >
+                              <Download size={14} /> Download Signed Doc
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CARD FOOTER: ACTIONS */}
+                      <div className="submission-card-footer">
+                        <div className="sub-footer-meta">
+                          <span>Builder Contact: <strong>{sub.builderName}</strong> ({sub.builderEmail})</span>
+                          {sub.rejectionReason && (
+                            <span className="rejection-note">Reason: {sub.rejectionReason}</span>
+                          )}
+                          {sub.reviewedAt && (
+                            <span className="review-meta">
+                              Reviewed by {sub.reviewedBy || "Admin"} on {new Date(sub.reviewedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="sub-footer-actions">
+                          {isPending && (
+                            <>
+                              <button
+                                type="button"
+                                className="btn-approve-project"
+                                onClick={() => handleApproveProject(sub.id)}
+                              >
+                                <CheckCircle2 size={16} /> Approve Project & Agreement
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-reject-project"
+                                onClick={() => handleRejectProject(sub.id)}
+                              >
+                                <XCircle size={16} /> Request Revision / Reject
+                              </button>
+                            </>
+                          )}
+
+                          {isApproved && (
+                            <button
+                              type="button"
+                              className="btn-reject-project"
+                              onClick={() => handleRejectProject(sub.id)}
+                            >
+                              Revoke Approval
+                            </button>
+                          )}
+
+                          {isRejected && (
+                            <button
+                              type="button"
+                              className="btn-approve-project"
+                              onClick={() => handleApproveProject(sub.id)}
+                            >
+                              <CheckCircle2 size={16} /> Re-Approve Project
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* TAB 3: LOGIN & ACCESS AUDIT LOGS */}
         {activeTab === "audit" && (
           <section className="admin-content-section">
             <div className="audit-section-header">
@@ -619,6 +981,12 @@ export default function AdminDashboard() {
           </section>
         )}
       </div>
+
+      {/* In-App Agreement Reader Modal */}
+      <AgreementViewerModal
+        isOpen={isAgreementModalOpen}
+        onClose={() => setIsAgreementModalOpen(false)}
+      />
     </div>
   );
 }

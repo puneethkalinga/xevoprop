@@ -1,0 +1,301 @@
+/* =========================================================
+   XEVOPROP — BUILDER AGREEMENT VIEWER MODAL
+   ========================================================= */
+
+.agreement-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.agreement-modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: min(900px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* HEADER */
+.agreement-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #ffffff;
+}
+
+.agreement-modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.agreement-icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.agreement-modal-title-group h3 {
+  margin: 0 0 2px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.agreement-modal-title-group p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.agreement-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agreement-download-btn-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agreement-download-btn-header:hover {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.agreement-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.agreement-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* BODY */
+.agreement-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  background: #f8fafc;
+  flex: 1;
+}
+
+.agreement-legal-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.agreement-document-paper {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 40px 48px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  font-family: inherit;
+  color: #1e293b;
+  line-height: 1.7;
+}
+
+.doc-main-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 850;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.doc-sub-title {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 28px;
+}
+
+.doc-section-heading {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 28px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.doc-subsection {
+  font-size: 13px;
+  color: #334155;
+  margin: 0 0 10px;
+  padding-left: 12px;
+}
+
+.doc-paragraph {
+  font-size: 13px;
+  color: #334155;
+  margin: 0 0 12px;
+}
+
+.doc-parties-text {
+  font-size: 13px;
+  color: #1e293b;
+  font-weight: 600;
+  margin: 0 0 12px;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
+.agreement-sign-block {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px dashed #cbd5e1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.sign-col strong {
+  display: block;
+  font-size: 12px;
+  color: #0f172a;
+  margin-bottom: 40px;
+}
+
+.sign-line {
+  border-bottom: 1px solid #94a3b8;
+  margin-bottom: 6px;
+}
+
+.sign-col span {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* FOOTER */
+.agreement-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #ffffff;
+  flex-wrap: wrap;
+}
+
+.agreement-footer-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.agreement-footer-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agreement-download-btn-footer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1e40af;
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agreement-download-btn-footer:hover {
+  background: #1d4ed8;
+}
+
+.agreement-close-btn-footer {
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.agreement-close-btn-footer:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}

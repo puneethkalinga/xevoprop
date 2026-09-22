@@ -6,8 +6,19 @@ import {
   Loader2,
   ImagePlus,
   X,
+  FileText,
+  Download,
+  ExternalLink,
+  Upload,
+  CheckCircle2,
+  ShieldCheck,
+  FileCheck,
+  Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import AgreementViewerModal from "../components/AgreementViewerModal";
+import { submitProjectWithAgreement } from "../lib/adminStore";
 import {
   REAL_ESTATE_STATES,
   CITIES_BY_STATE,
@@ -23,7 +34,9 @@ const API_URL =
 
 function AddProject() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fileInputRef = useRef(null);
+  const agreementFileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -42,6 +55,14 @@ function AddProject() {
   const [uploadStatus, setUploadStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
+  const [signedAgreementFile, setSignedAgreementFile] = useState(null);
+  const [declarations, setDeclarations] = useState({
+    readAndAgreed: false,
+    infoAccurate: false,
+    authorized: false,
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -129,9 +150,63 @@ function AddProject() {
     });
   };
 
+  const handleSignedAgreementUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      setError("Document exceeds maximum allowed size of 15MB.");
+      e.target.value = "";
+      return;
+    }
+
+    const nameLower = file.name.toLowerCase();
+    const isValidExt = nameLower.endsWith(".pdf") || nameLower.endsWith(".doc") || nameLower.endsWith(".docx");
+
+    if (!isValidExt) {
+      setError("Invalid file format. Please upload a PDF, DOC, or DOCX document.");
+      e.target.value = "";
+      return;
+    }
+
+    setError("");
+    setSignedAgreementFile({
+      name: file.name,
+      size: file.size,
+      file,
+      dataUrl: URL.createObjectURL(file),
+    });
+    e.target.value = "";
+  };
+
+  const handleAgreementDownload = () => {
+    const a = document.createElement("a");
+    a.href = "/documents/Builder_Listing_Commission_Agreementfinal.docx";
+    a.download = "Builder_Listing_Commission_Agreementfinal.docx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleDeclarationChange = (key) => {
+    setDeclarations((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const isReadyToSubmit =
+    formData.name.trim() !== "" &&
+    formData.location.trim() !== "" &&
+    formData.type !== "" &&
+    selectedImages.length > 0 &&
+    signedAgreementFile !== null &&
+    declarations.readAndAgreed &&
+    declarations.infoAccurate &&
+    declarations.authorized;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
 
     if (!formData.name.trim()) {
@@ -149,117 +224,99 @@ function AddProject() {
       return;
     }
 
+    if (selectedImages.length === 0) {
+      setError("Please add at least one project photo or video.");
+      return;
+    }
+
+    if (!signedAgreementFile) {
+      setError("Please upload the digitally signed Builder Listing & Commission Agreement.");
+      return;
+    }
+
+    if (!declarations.readAndAgreed || !declarations.infoAccurate || !declarations.authorized) {
+      setError("Please confirm all declarations before submitting your project.");
+      return;
+    }
+
     try {
       setLoading(true);
-      setUploadStatus("Creating project...");
-
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+      setUploadStatus("Submitting project and signed agreement for admin approval...");
 
       const completeLocation = [
         formData.location.trim(),
         formData.city.trim(),
         formData.state.trim(),
-      ]
-        .filter(Boolean)
-        .join(", ");
+      ].filter(Boolean).join(", ");
 
-      /* =========================
-         CREATE PROJECT
-      ========================= */
+      // 1. Submit through admin store with agreement and declarations
+      submitProjectWithAgreement({
+        name: formData.name.trim(),
+        location: completeLocation,
+        city: formData.city.trim() || "Hyderabad",
+        state: formData.state.trim() || "Telangana",
+        type: formData.type,
+        units: formData.units,
+        price: formData.price.trim(),
+        description: formData.description.trim(),
+        images: selectedImages,
+        builder: user || { id: 46, name: "SB Infra", role: "Developer" },
+        agreementFile: signedAgreementFile,
+        declarations,
+      });
 
-      const response = await fetch(
-        `${API_URL}/projects`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: formData.name.trim(),
-            location: completeLocation,
-            city: formData.city.trim() || null,
-            type: formData.type,
-            units: formData.units
-              ? Number(formData.units)
-              : null,
-            price: formData.price.trim() || null,
-            description:
-              formData.description.trim() || null,
-            status: formData.status,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to create project."
-        );
-      }
-
-      const projectId = data.project?.id;
-
-      if (!projectId) {
-        throw new Error(
-          "Project created but project ID was not returned."
-        );
-      }
-
-      /* =========================
-         UPLOAD IMAGES (MULTIPLE)
-      ========================= */
-
-      if (selectedImages.length > 0) {
-        for (let i = 0; i < selectedImages.length; i++) {
-          setUploadStatus(
-            `Uploading photo ${i + 1} of ${selectedImages.length}...`
-          );
-
-          const imageFormData = new FormData();
-          imageFormData.append("image", selectedImages[i].file);
-
-          const uploadResponse = await fetch(
-            `${API_URL}/upload/project/${projectId}`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              body: imageFormData,
+      // 2. Also try external API if token is present
+      const token = localStorage.getItem("token");
+      if (token && !token.startsWith("jwt_token_")) {
+        try {
+          const res = await fetch(`${API_URL}/projects`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              name: formData.name.trim(),
+              location: completeLocation,
+              city: formData.city.trim() || null,
+              type: formData.type,
+              units: formData.units ? Number(formData.units) : null,
+              price: formData.price.trim() || null,
+              description: formData.description.trim() || null,
+              status: "Awaiting Approval",
+            }),
+          });
+          const data = await res.json();
+          const projectId = data.project?.id;
+          if (projectId && selectedImages.length > 0) {
+            for (let i = 0; i < selectedImages.length; i++) {
+              if (selectedImages[i].file) {
+                const imageFormData = new FormData();
+                imageFormData.append("image", selectedImages[i].file);
+                await fetch(`${API_URL}/upload/project/${projectId}`, {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${token}` },
+                  body: imageFormData,
+                }).catch(() => {});
+              }
             }
-          );
-
-          if (!uploadResponse.ok) {
-            console.warn(
-              `Warning: Upload failed for image ${i + 1}`
-            );
           }
+        } catch (apiErr) {
+          console.warn("Backend API sync failed, recorded in local store:", apiErr);
         }
       }
 
-      alert("Project created successfully with all photos!");
-
-      navigate("/my-projects");
-    } catch (err) {
-      console.error(
-        "CREATE PROJECT ERROR:",
-        err
-      );
-
-      setError(
-        err.message ||
-          "Unable to create project."
-      );
-    } finally {
       setLoading(false);
-      setUploadStatus("");
+      navigate("/my-projects", {
+        state: {
+          submittedSuccess: true,
+          projectName: formData.name.trim(),
+        },
+      });
+    } catch (err) {
+      console.error("CREATE PROJECT ERROR:", err);
+      setError(err.message || "Unable to submit project.");
+      setLoading(false);
     }
   };
 
@@ -723,44 +780,203 @@ function AddProject() {
             </div>
           </section>
 
+          {/* 03: AGREEMENT & AUTHORIZATION */}
+          <section className="project-form-section">
+            <div className="project-form-heading">
+              <span>03</span>
+              <div>
+                <h2>Agreement & Authorization</h2>
+                <p>
+                  Review the agreement, digitally sign it and confirm the declarations.
+                </p>
+              </div>
+            </div>
+
+            <div className="agreement-section-content">
+              {/* Card 1: Official Agreement Card */}
+              <div className="agreement-document-card">
+                <div className="agreement-doc-icon-wrap">
+                  <FileText size={24} className="agreement-doc-icon" />
+                </div>
+                <div className="agreement-doc-info">
+                  <h3>Builder Listing & Commission Agreement</h3>
+                  <p>Review the official agreement before submitting your project.</p>
+                </div>
+                <div className="agreement-doc-actions">
+                  <button
+                    type="button"
+                    className="agreement-action-btn secondary"
+                    onClick={() => setIsAgreementModalOpen(true)}
+                  >
+                    <ExternalLink size={16} />
+                    Open
+                  </button>
+                  <button
+                    type="button"
+                    className="agreement-action-btn primary"
+                    onClick={handleAgreementDownload}
+                  >
+                    <Download size={16} />
+                    Download
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 2: Upload Digitally Signed Agreement dropzone */}
+              <div
+                className={`agreement-dropzone ${signedAgreementFile ? "has-file" : ""}`}
+                onClick={() => agreementFileInputRef.current?.click()}
+              >
+                <input
+                  ref={agreementFileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleSignedAgreementUpload}
+                  hidden
+                />
+
+                {!signedAgreementFile ? (
+                  <div className="dropzone-empty-state">
+                    <div className="dropzone-icon-circle">
+                      <Upload size={24} />
+                    </div>
+                    <strong>Upload Digitally Signed Agreement</strong>
+                    <span className="dropzone-hint">
+                      PDF, DOC or DOCX · Maximum 15MB
+                    </span>
+                    <button
+                      type="button"
+                      className="dropzone-browse-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        agreementFileInputRef.current?.click();
+                      }}
+                    >
+                      Browse Document
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="dropzone-file-selected"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="file-info-left">
+                      <div className="file-success-icon">
+                        <FileCheck size={26} />
+                      </div>
+                      <div className="file-details">
+                        <span className="file-name">{signedAgreementFile.name}</span>
+                        <span className="file-meta">
+                          {(signedAgreementFile.size / (1024 * 1024)).toFixed(2)} MB · Digitally Signed Agreement Attached
+                        </span>
+                      </div>
+                    </div>
+                    <div className="file-actions-right">
+                      <span className="file-status-badge">
+                        <CheckCircle2 size={15} /> Ready
+                      </span>
+                      <button
+                        type="button"
+                        className="file-remove-btn"
+                        onClick={() => setSignedAgreementFile(null)}
+                        title="Remove attached file"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Declarations (3 checkboxes) */}
+              <div className="agreement-declarations-list">
+                <label className="declaration-item">
+                  <input
+                    type="checkbox"
+                    checked={declarations.readAndAgreed}
+                    onChange={() => handleDeclarationChange("readAndAgreed")}
+                  />
+                  <span className="declaration-text">
+                    I have read, understood and agree to the <strong>Builder Listing & Commission Agreement</strong>.
+                  </span>
+                </label>
+
+                <label className="declaration-item">
+                  <input
+                    type="checkbox"
+                    checked={declarations.infoAccurate}
+                    onChange={() => handleDeclarationChange("infoAccurate")}
+                  />
+                  <span className="declaration-text">
+                    I confirm that all project information, pricing, descriptions and specifications provided are accurate and complete.
+                  </span>
+                </label>
+
+                <label className="declaration-item">
+                  <input
+                    type="checkbox"
+                    checked={declarations.authorized}
+                    onChange={() => handleDeclarationChange("authorized")}
+                  />
+                  <span className="declaration-text">
+                    I confirm that I am authorized to list this project on Xevoprop and submit it for review.
+                  </span>
+                </label>
+              </div>
+
+              {/* Policy note */}
+              <div className="agreement-policy-note">
+                <ShieldCheck size={18} className="policy-icon" />
+                <span>
+                  Xevoprop may review, verify, approve, reject or remove project listings according to its listing policies.
+                </span>
+              </div>
+            </div>
+          </section>
+
           {/* ACTIONS */}
-
           <div className="add-project-actions">
-
             <button
               type="button"
               className="project-cancel-btn"
-              onClick={() =>
-                navigate("/my-projects")
-              }
+              onClick={() => navigate("/my-projects")}
               disabled={loading}
             >
               Cancel
             </button>
 
-            <button
-              type="submit"
-              className="project-create-btn"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2
-                    size={17}
-                    className="project-loading"
-                  />
-                  {uploadStatus || "Creating..."}
-                </>
-              ) : (
-                <>
-                  <Plus size={17} />
-                  Create Project
-                </>
+            <div className="submit-btn-wrapper">
+              <button
+                type="submit"
+                className={`project-create-btn ${!isReadyToSubmit ? "disabled-btn" : ""}`}
+                disabled={loading || !isReadyToSubmit}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={17} className="project-loading" />
+                    {uploadStatus || "Submitting..."}
+                  </>
+                ) : (
+                  <>
+                    <Plus size={17} />
+                    Publish Project
+                  </>
+                )}
+              </button>
+              {!isReadyToSubmit && (
+                <p className="submit-requirement-hint">
+                  Add at least one project image/video, upload the signed agreement and complete all declarations to create this project
+                </p>
               )}
-            </button>
-
+            </div>
           </div>
         </form>
+
+        {/* In-App Agreement Reader Modal */}
+        <AgreementViewerModal
+          isOpen={isAgreementModalOpen}
+          onClose={() => setIsAgreementModalOpen(false)}
+        />
       </div>
     </div>
   );

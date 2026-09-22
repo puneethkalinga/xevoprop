@@ -9,10 +9,16 @@ import {
   Layers,
   IndianRupee,
   Loader2,
+  FileText,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { vilvaProjects } from "../data/vilvaProjects";
 import { sbInfraVentures } from "../data/sbInfraProjects";
+import { getStoredProjectSubmissions } from "../lib/adminStore";
 import "./MyProjects.css";
 
 const API_URL =
@@ -20,6 +26,7 @@ const API_URL =
 
 function MyProjects() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const user = (() => {
     try {
@@ -39,6 +46,9 @@ function MyProjects() {
   const [projects, setProjects] = useState(defaultProjects);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successBanner, setSuccessBanner] = useState(
+    location.state?.submittedSuccess ? location.state?.projectName : null
+  );
 
   useEffect(() => {
     fetchProjects();
@@ -56,30 +66,58 @@ function MyProjects() {
         return;
       }
 
-      const response = await fetch(
-        `${API_URL}/projects`,
-        {
+      // 1. Get stored submissions for this builder
+      const allSubmissions = getStoredProjectSubmissions();
+      const userSubmissions = allSubmissions.filter((s) => {
+        if (user?.id && String(s.builderId) === String(user.id)) return true;
+        if (user?.email && s.builderEmail?.toLowerCase() === user.email.toLowerCase()) return true;
+        if (isSBInfra && (s.builderName?.toLowerCase().includes("sb infra") || s.builderCompany?.toLowerCase().includes("sb infra"))) return true;
+        return false;
+      });
+
+      const formattedSubmissions = userSubmissions.map((s) => ({
+        id: s.id,
+        name: s.name,
+        location: s.location || `${s.city}, ${s.state}`,
+        city: s.city,
+        type: s.type,
+        units: s.units,
+        price: s.price,
+        image: s.images?.[0]?.url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+        status:
+          s.status === "pending_approval"
+            ? "Awaiting Admin Approval"
+            : s.status === "approved"
+            ? "Verified & Live"
+            : "Revision Requested",
+        statusCode: s.status,
+        isSubmission: true,
+        agreementName: s.agreement?.fileName,
+        rejectionReason: s.rejectionReason,
+      }));
+
+      // 2. Fetch server API projects
+      let serverProjects = [];
+      try {
+        const response = await fetch(`${API_URL}/projects`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          serverProjects = Array.isArray(data) ? data : data.projects || [];
         }
-      );
-
-      if (!response.ok) {
-        setProjects(defaultProjects);
-        return;
+      } catch (apiErr) {
+        console.warn("API projects fetch fallback:", apiErr);
       }
 
-      const data = await response.json();
-      const list = Array.isArray(data)
-        ? data
-        : data.projects || [];
+      const baseList = serverProjects.length > 0 ? serverProjects : defaultProjects;
+      const combined = [...formattedSubmissions, ...baseList];
+      const unique = Array.from(new Map(combined.map((m) => [m.id, m])).values());
 
-      if (list.length > 0) {
-        setProjects(list);
-      } else {
-        setProjects(defaultProjects);
-      }
+      setProjects(unique);
     } catch (err) {
       console.warn("PROJECT FETCH ERROR:", err);
       setProjects(defaultProjects);
@@ -168,6 +206,27 @@ function MyProjects() {
           </button>
         </div>
 
+        {/* SUBMISSION NOTIFICATION BANNER */}
+        {successBanner && (
+          <div className="my-projects-submission-banner">
+            <CheckCircle2 size={20} className="banner-success-icon" />
+            <div className="banner-text">
+              <strong>Project Listing & Signed Agreement Submitted!</strong>
+              <p>
+                "{successBanner}" has been successfully sent to the Master Admin with your digitally signed agreement.
+                The admin will review and verify your submission before making the listing public.
+              </p>
+            </div>
+            <button
+              className="banner-close-btn"
+              onClick={() => setSuccessBanner(null)}
+              title="Dismiss"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         {/* ERROR */}
         {error && (
           <div className="my-projects-error">
@@ -206,7 +265,7 @@ function MyProjects() {
           <div className="my-projects-grid">
             {projects.map((project) => (
               <article
-                className="my-project-card"
+                className={`my-project-card ${project.statusCode === "pending_approval" ? "card-pending-submission" : ""}`}
                 key={project.id}
               >
                 {/* IMAGE */}
@@ -224,13 +283,32 @@ function MyProjects() {
 
                   <span
                     className={`project-status ${
-                      String(
-                        project.status || ""
-                      ).toLowerCase()
+                      project.statusCode === "pending_approval"
+                        ? "status-pending-approval"
+                        : project.statusCode === "rejected"
+                        ? "status-rejected"
+                        : project.statusCode === "approved"
+                        ? "status-approved"
+                        : String(
+                            project.status || ""
+                          ).toLowerCase().replace(/\s+/g, "-")
                     }`}
                   >
-                    {project.status ||
-                      "Available"}
+                    {project.statusCode === "pending_approval" ? (
+                      <>
+                        <Clock size={12} /> Awaiting Admin Approval
+                      </>
+                    ) : project.statusCode === "rejected" ? (
+                      <>
+                        <AlertCircle size={12} /> Revision Requested
+                      </>
+                    ) : project.statusCode === "approved" ? (
+                      <>
+                        <CheckCircle2 size={12} /> Verified & Live
+                      </>
+                    ) : (
+                      project.status || "Available"
+                    )}
                   </span>
                 </div>
 
@@ -238,6 +316,20 @@ function MyProjects() {
                 <div className="my-project-content">
 
                   <h2>{project.name}</h2>
+
+                  {project.agreementName && (
+                    <div className="my-project-agreement-pill">
+                      <FileText size={13} />
+                      <span>Signed Agreement: {project.agreementName}</span>
+                    </div>
+                  )}
+
+                  {project.rejectionReason && (
+                    <div className="my-project-rejection-note">
+                      <AlertCircle size={13} />
+                      <span>Admin note: {project.rejectionReason}</span>
+                    </div>
+                  )}
 
                   <div className="project-location">
                     <MapPin size={15} />

@@ -699,3 +699,123 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   SUBMISSION BANNER & STATUS BADGES
+   ========================================================= */
+
+.my-projects-submission-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #16a34a;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.08);
+  position: relative;
+}
+
+.banner-success-icon {
+  color: #16a34a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.banner-text strong {
+  display: block;
+  font-size: 14px;
+  color: #166534;
+  margin-bottom: 4px;
+}
+
+.banner-text p {
+  margin: 0;
+  font-size: 13px;
+  color: #14532d;
+  line-height: 1.45;
+}
+
+.banner-close-btn {
+  background: none;
+  border: none;
+  color: #15803d;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.banner-close-btn:hover {
+  background: #dcfce7;
+}
+
+/* Submission Badges & Agreement Pills */
+.project-status.status-pending-approval {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.project-status.status-approved {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.project-status.status-rejected {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-pending-submission {
+  border-color: #fde68a !important;
+}
+
+.my-project-agreement-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-project-rejection-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
