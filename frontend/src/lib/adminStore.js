@@ -64,36 +64,6 @@ const INITIAL_USERS = [
     avatar: "https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=150&q=80",
     totalLogins: 28,
   },
-  {
-    id: 102,
-    username: "ramesh.kumar@apexrealty.in",
-    name: "Ramesh Kumar",
-    email: "ramesh.kumar@apexrealty.in",
-    phone: "9849012345",
-    role: "Seller",
-    company: "Apex Properties & Lands",
-    status: "pending",
-    registeredAt: "2026-09-22T19:40:00.000Z",
-    approvedAt: null,
-    approvedBy: null,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-    totalLogins: 0,
-  },
-  {
-    id: 103,
-    username: "kavitha.reddy@hyderabadhomes.com",
-    name: "Kavitha Reddy",
-    email: "kavitha.reddy@hyderabadhomes.com",
-    phone: "9988776655",
-    role: "Developer",
-    company: "Greenfield Infra Projects",
-    status: "pending",
-    registeredAt: "2026-09-23T00:15:00.000Z",
-    approvedAt: null,
-    approvedBy: null,
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80",
-    totalLogins: 0,
-  },
 ];
 
 const INITIAL_LOGS = [
@@ -124,19 +94,6 @@ const INITIAL_LOGS = [
     action: "Developer Login - Project Media Upload",
   },
   {
-    id: "log_103",
-    userName: "Kavitha Reddy",
-    userEmail: "kavitha.reddy@hyderabadhomes.com",
-    userRole: "Developer",
-    company: "Greenfield Infra Projects",
-    timestamp: "2026-09-23T00:16:30.000Z",
-    ip: "103.212.145.22",
-    location: "Secunderabad, Telangana, India",
-    device: "Safari 17 / iPhone 15 Pro",
-    status: "BLOCKED_PENDING",
-    action: "Login Blocked - Awaiting Admin Approval",
-  },
-  {
     id: "log_104",
     userName: "Vilva Builders",
     userEmail: "info@vilvainfra.com",
@@ -159,7 +116,20 @@ export function getStoredUsers() {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(INITIAL_USERS));
       return INITIAL_USERS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    // Auto-clean any dummy test accounts (id 102, 103)
+    const cleaned = parsed.filter(
+      (u) =>
+        u.id !== 102 &&
+        u.id !== 103 &&
+        !u.email?.includes("apexrealty") &&
+        !u.email?.includes("hyderabadhomes")
+    );
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cleaned));
+      return cleaned;
+    }
+    return parsed;
   } catch {
     return INITIAL_USERS;
   }
@@ -182,7 +152,15 @@ export function getStoredAccessLogs() {
       localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(INITIAL_LOGS));
       return INITIAL_LOGS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const cleaned = parsed.filter(
+      (l) => l.id !== "log_103" && !l.userEmail?.includes("hyderabadhomes")
+    );
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(cleaned));
+      return cleaned;
+    }
+    return parsed;
   } catch {
     return INITIAL_LOGS;
   }
