@@ -52,13 +52,18 @@ function Profile() {
       localStorage.getItem("token")?.startsWith("jwt_token_admin_");
 
     if (isMasterAdmin) {
+      const cleanPhone =
+        u?.phone && u.phone !== "9876543210" && u.phone !== "+91 98765 43210"
+          ? u.phone
+          : "";
+
       return {
         ...MASTER_ADMIN_CREDENTIALS,
         id: 1,
         ...u,
         name: u?.name || MASTER_ADMIN_CREDENTIALS.name,
         email: u?.email || MASTER_ADMIN_CREDENTIALS.email,
-        phone: u?.phone || MASTER_ADMIN_CREDENTIALS.phone,
+        phone: cleanPhone,
         company: u?.company || MASTER_ADMIN_CREDENTIALS.company,
         role: "Admin",
       };

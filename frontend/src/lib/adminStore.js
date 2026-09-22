@@ -15,7 +15,7 @@ export const MASTER_ADMIN_CREDENTIALS = {
   role: "Admin",
   status: "approved",
   company: "Xevoproptech Pvt Ltd",
-  phone: "+91 98765 43210",
+  phone: "",
 };
 
 const INITIAL_USERS = [
@@ -24,7 +24,7 @@ const INITIAL_USERS = [
     username: "admin.xevoproptech",
     name: "Xevoproptech Admin",
     email: "admin.xevoproptech@gmail.com",
-    phone: "9876543210",
+    phone: "",
     role: "Admin",
     company: "Xevoproptech Pvt Ltd",
     status: "approved",

@@ -126,17 +126,9 @@ function Navbar() {
               {user.role === "Admin" ? (
                 <Link
                   to="/admin/dashboard"
-                  className="nav-dashboard-pill"
-                  style={{
-                    background: "#0f172a",
-                    color: "#38bdf8",
-                    borderColor: "#334155",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
+                  className="nav-dashboard-pill nav-admin-portal-btn"
                 >
-                  <ShieldCheck size={14} />
+                  <ShieldCheck size={14} className="nav-admin-shield" />
                   Admin Portal
                 </Link>
               ) : (
