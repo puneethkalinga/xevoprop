@@ -10,14 +10,17 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { vilvaProjects } from "../data/vilvaProjects";
+import { sbInfraVentures } from "../data/sbInfraProjects";
 import "./Projects.css";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://xevoprop.onrender.com/api";
 
+const ALL_LOCAL_PROJECTS = [...vilvaProjects, ...sbInfraVentures];
+
 function Projects() {
-  const [projects, setProjects] = useState(vilvaProjects);
-  const [filteredProjects, setFilteredProjects] = useState(vilvaProjects);
+  const [projects, setProjects] = useState(ALL_LOCAL_PROJECTS);
+  const [filteredProjects, setFilteredProjects] = useState(ALL_LOCAL_PROJECTS);
 
   const [search, setSearch] = useState("");
   const [type, setType] = useState("All");
@@ -42,7 +45,7 @@ function Projects() {
       );
 
       if (!response.ok) {
-        setProjects(vilvaProjects);
+        setProjects(ALL_LOCAL_PROJECTS);
         return;
       }
 
@@ -56,13 +59,17 @@ function Projects() {
         (p) =>
           p.name &&
           p.name.trim().toLowerCase() !== "vila" &&
-          !vilvaProjects.some((vp) => vp.id === p.id || vp.name.toLowerCase() === p.name.toLowerCase())
+          !ALL_LOCAL_PROJECTS.some(
+            (lp) =>
+              lp.id === p.id ||
+              lp.name.toLowerCase() === p.name.toLowerCase()
+          )
       );
 
-      setProjects([...vilvaProjects, ...validApiProjects]);
+      setProjects([...ALL_LOCAL_PROJECTS, ...validApiProjects]);
     } catch (err) {
       console.warn("PUBLIC PROJECTS FETCH ERROR:", err.message);
-      setProjects(vilvaProjects);
+      setProjects(ALL_LOCAL_PROJECTS);
     } finally {
       setLoading(false);
     }
@@ -85,6 +92,7 @@ function Projects() {
           project.type,
           project.category,
           project.description,
+          project.developer?.name,
         ]
           .filter(Boolean)
           .some((value) =>
@@ -99,6 +107,14 @@ function Projects() {
         const pType = String(project.type || "").toLowerCase();
         const pCat = String(project.category || "").toLowerCase();
 
+        if (filterKey === "ventures" || filterKey === "venture") {
+          return (
+            project.isVenture === true ||
+            pCat.includes("venture") ||
+            pType.includes("venture") ||
+            String(project.developer?.name || "").toLowerCase().includes("sb infra")
+          );
+        }
         if (filterKey === "apartment") {
           return (
             pType.includes("apartment") ||
@@ -244,6 +260,19 @@ function Projects() {
             >
               Commercial
             </button>
+
+            <button
+              className={
+                type === "Ventures"
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setType("Ventures")
+              }
+            >
+              Ventures
+            </button>
           </div>
 
         </div>
@@ -334,9 +363,23 @@ function Projects() {
                       className="project-card"
                       key={project.id}
                     >
-                      {/* IMAGE */}
+                      {/* IMAGE / VIDEO */}
                       <div className="project-card-image">
-                        {project.image ? (
+                        {project.isLocalVideo && project.video ? (
+                          <div className="project-card-video-wrapper">
+                            <video
+                              src={project.video}
+                              poster={project.image}
+                              muted
+                              autoPlay
+                              loop
+                              playsInline
+                              preload="metadata"
+                              className="project-card-video"
+                            />
+                            <span className="project-video-badge">🔇 Muted Video Tour</span>
+                          </div>
+                        ) : project.image ? (
                           <img
                             src={project.image}
                             alt={project.name}
@@ -349,7 +392,11 @@ function Projects() {
                         )}
 
                         {project.category && (
-                          <span className="project-card-cat-badge">
+                          <span
+                            className={`project-card-cat-badge ${
+                              project.isVenture ? "cat-venture" : ""
+                            }`}
+                          >
                             {project.category}
                           </span>
                         )}

@@ -1325,6 +1325,51 @@
   border: 0;
 }
 
+.project-video-frame.local-video-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #090d16;
+}
+
+.project-html5-video {
+  width: 100%;
+  height: 100%;
+  min-height: 510px;
+  max-height: 560px;
+  object-fit: cover;
+  display: block;
+}
+
+.project-video-mute-notice {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.02em;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.project-thumb-video-launcher {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  border: 2px solid #38bdf8 !important;
+}
+
 .project-close-video-btn {
   position: absolute;
   top: 14px;

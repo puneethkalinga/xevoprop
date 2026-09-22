@@ -24,7 +24,10 @@ import {
 
 import { apiFetch } from "../lib/api";
 import { vilvaProjects, VILVA_DEVELOPER } from "../data/vilvaProjects";
+import { sbInfraVentures, SB_INFRA_DEVELOPER } from "../data/sbInfraProjects";
 import "./ProjectDetails.css";
+
+const ALL_LOCAL_PROJECTS = [...vilvaProjects, ...sbInfraVentures];
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -53,8 +56,8 @@ export default function ProjectDetails() {
       try {
         setLoading(true);
 
-        // 1. First check local authoritative Vilva Projects dataset
-        const localMatch = vilvaProjects.find(
+        // 1. First check local authoritative Projects dataset (Vilva Projects + SB Infra Ventures)
+        const localMatch = ALL_LOCAL_PROJECTS.find(
           (p) =>
             String(p.id) === String(id) ||
             p.slug === id ||
@@ -78,8 +81,8 @@ export default function ProjectDetails() {
       } catch (error) {
         console.error("Project details error:", error);
         // Fallback to first project if not found
-        if (!cancelled && vilvaProjects.length > 0) {
-          setProject(vilvaProjects[0]);
+        if (!cancelled && ALL_LOCAL_PROJECTS.length > 0) {
+          setProject(ALL_LOCAL_PROJECTS[0]);
         }
       } finally {
         if (!cancelled) {
@@ -161,7 +164,7 @@ export default function ProjectDetails() {
       : [];
 
   const currentImg = allImages[selectedImageIndex] || project.image;
-  const developer = project.developer || VILVA_DEVELOPER;
+  const developer = project.developer || (project.isVenture ? SB_INFRA_DEVELOPER : VILVA_DEVELOPER);
   const statusClass = String(project.status || "ongoing").toLowerCase();
 
   return (
@@ -195,7 +198,39 @@ export default function ProjectDetails() {
         <section className="project-details-hero">
           {/* GALLERY CONTAINER */}
           <div className="project-details-image">
-            {showVideo && project.videoUrl ? (
+            {showVideo && (project.isLocalVideo || project.video?.endsWith(".mp4") || project.videoUrl?.endsWith(".mp4")) ? (
+              <div className="project-video-frame local-video-container">
+                <video
+                  src={project.video || project.videoUrl}
+                  poster={project.image}
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  ref={(el) => {
+                    if (el) {
+                      el.muted = true;
+                      el.volume = 0;
+                    }
+                  }}
+                  onVolumeChange={(e) => {
+                    e.currentTarget.muted = true;
+                    e.currentTarget.volume = 0;
+                  }}
+                  className="project-html5-video"
+                />
+                <div className="project-video-mute-notice">
+                  🔇 Video audio permanently muted (Venture Video Tour)
+                </div>
+                <button
+                  className="project-close-video-btn"
+                  onClick={() => setShowVideo(false)}
+                >
+                  ✕ View Photos
+                </button>
+              </div>
+            ) : showVideo && project.videoUrl ? (
               <div className="project-video-frame">
                 <iframe
                   src={project.videoUrl}
@@ -225,19 +260,29 @@ export default function ProjectDetails() {
             )}
 
             {/* VIDEO TOGGLE BUTTON */}
-            {project.videoUrl && !showVideo && (
+            {(project.video || project.videoUrl) && !showVideo && (
               <button
                 className="project-watch-video-btn"
                 onClick={() => setShowVideo(true)}
               >
                 <Play size={14} fill="#ffffff" />
-                Watch Video Walkthrough
+                {project.isVenture ? "▶ Watch Muted Venture Video Tour" : "Watch Video Walkthrough"}
               </button>
             )}
 
             {/* THUMBNAIL SELECTOR */}
-            {allImages.length > 1 && !showVideo && (
+            {!showVideo && (
               <div className="project-details-thumbs">
+                {(project.video || project.videoUrl) && (
+                  <button
+                    type="button"
+                    className="project-thumb-btn project-thumb-video-launcher"
+                    onClick={() => setShowVideo(true)}
+                    title="Play Muted Venture Video"
+                  >
+                    <span>▶ 🔇 Video</span>
+                  </button>
+                )}
                 {allImages.map((thumbUrl, idx) => (
                   <button
                     key={idx}
@@ -308,7 +353,7 @@ export default function ProjectDetails() {
                 className="project-secondary-button"
               >
                 <Phone size={15} />
-                +91 89777 61133
+                +91 {developer.phone || "89777 61133"}
               </a>
             </div>
           </div>
@@ -426,7 +471,7 @@ export default function ProjectDetails() {
                     Detailed Technical <em>Specifications</em>
                   </h2>
                   <p className="section-subtext">
-                    Comprehensive construction details and material specifications as established by Vilva Builders.
+                    Comprehensive construction details and material specifications as established by {developer.name || "the developer"}.
                   </p>
                 </div>
 
@@ -652,14 +697,14 @@ export default function ProjectDetails() {
               <span className="project-contact-label">DIRECT BUILDER ENQUIRY</span>
               <h3>Inquire About {project.name}</h3>
               <p>
-                Direct connection to Vilva Builders. Receive complete pricing sheets, unit availability, and schedule site visits.
+                Direct connection to {developer.name || "the developer"}. Receive complete pricing sheets, unit availability, and schedule site visits.
               </p>
 
               {enquirySubmitted ? (
                 <div className="enquiry-success-banner">
                   <CheckCircle2 size={22} color="#16a34a" />
                   <h4>Enquiry Sent Successfully!</h4>
-                  <p>Vilva Builders sales team will contact you shortly.</p>
+                  <p>{developer.name || "Developer"} sales team will contact you shortly.</p>
                   <button
                     type="button"
                     onClick={() => setEnquirySubmitted(false)}
@@ -730,7 +775,7 @@ export default function ProjectDetails() {
                     ) : (
                       <>
                         <Send size={15} />
-                        Submit Enquiry to Vilva Builders
+                        Submit Enquiry to {developer.name || "Developer"}
                       </>
                     )}
                   </button>

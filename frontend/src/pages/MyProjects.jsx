@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { vilvaProjects } from "../data/vilvaProjects";
+import { sbInfraVentures } from "../data/sbInfraProjects";
 import "./MyProjects.css";
 
 const API_URL =
@@ -20,7 +21,22 @@ const API_URL =
 function MyProjects() {
   const navigate = useNavigate();
 
-  const [projects, setProjects] = useState(vilvaProjects);
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+
+  const isSBInfra =
+    user?.id === 46 ||
+    String(user?.name || "").toLowerCase().includes("sb infra") ||
+    String(user?.email || "").toLowerCase().includes("sbinfra");
+
+  const defaultProjects = isSBInfra ? sbInfraVentures : vilvaProjects;
+
+  const [projects, setProjects] = useState(defaultProjects);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,7 +66,7 @@ function MyProjects() {
       );
 
       if (!response.ok) {
-        setProjects(vilvaProjects);
+        setProjects(defaultProjects);
         return;
       }
 
@@ -62,11 +78,11 @@ function MyProjects() {
       if (list.length > 0) {
         setProjects(list);
       } else {
-        setProjects(vilvaProjects);
+        setProjects(defaultProjects);
       }
     } catch (err) {
       console.warn("PROJECT FETCH ERROR:", err);
-      setProjects(vilvaProjects);
+      setProjects(defaultProjects);
     } finally {
       setLoading(false);
     }
@@ -271,7 +287,7 @@ function MyProjects() {
                     <button
                       onClick={() =>
                         navigate(
-                          `/projects/${project.id}`
+                          `/projects/${project.slug || project.id}`
                         )
                       }
                     >
