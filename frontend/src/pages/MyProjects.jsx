@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { vilvaProjects } from "../data/vilvaProjects";
 import "./MyProjects.css";
 
 const API_URL =
@@ -19,8 +20,8 @@ const API_URL =
 function MyProjects() {
   const navigate = useNavigate();
 
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState(vilvaProjects);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -48,24 +49,24 @@ function MyProjects() {
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to load projects."
-        );
+        setProjects(vilvaProjects);
+        return;
       }
 
-      setProjects(
-        Array.isArray(data)
-          ? data
-          : data.projects || []
-      );
+      const data = await response.json();
+      const list = Array.isArray(data)
+        ? data
+        : data.projects || [];
+
+      if (list.length > 0) {
+        setProjects(list);
+      } else {
+        setProjects(vilvaProjects);
+      }
     } catch (err) {
-      console.error("PROJECT FETCH ERROR:", err);
-      setError(
-        err.message || "Unable to load projects."
-      );
+      console.warn("PROJECT FETCH ERROR:", err);
+      setProjects(vilvaProjects);
     } finally {
       setLoading(false);
     }
