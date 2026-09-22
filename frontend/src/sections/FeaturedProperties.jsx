@@ -13,7 +13,6 @@ import {
   Calendar,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { properties as fallbackProperties } from "../data/properties";
 import "./FeaturedProperties.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "https://xevoprop.onrender.com/api";
@@ -35,25 +34,26 @@ function FeaturedProperties() {
     const fetchProperties = async () => {
       try {
         const response = await fetch(`${API_URL}/properties`, {
-          signal: AbortSignal.timeout(4000),
+          signal: AbortSignal.timeout(6000),
         });
 
         if (response.ok) {
           const data = await response.json();
           const items = Array.isArray(data) ? data : data.properties || [];
-          if (items.length > 0) {
-            setPropertiesList(items.slice(0, 3));
+          const LEGACY_IDS = new Set([1, 18, 19, 20, 21, 22]);
+          const cleanItems = items.filter((p) => !LEGACY_IDS.has(Number(p.id)));
+          if (cleanItems.length > 0) {
+            setPropertiesList(cleanItems.slice(0, 3));
             return;
           }
         }
       } catch (err) {
-        console.warn("Using verified local portfolio cache:", err.message);
+        console.warn("Featured properties fetch error:", err.message);
       } finally {
         setLoading(false);
       }
 
-      // Default to curated prime listings so platform is never empty
-      setPropertiesList(fallbackProperties.slice(0, 3));
+      setPropertiesList([]);
     };
 
     fetchProperties();
@@ -95,14 +95,15 @@ function FeaturedProperties() {
             className="featured-view-all-btn"
             onClick={() => navigate("/properties")}
           >
-            <span>Explore All 250+ Listings</span>
+            <span>Explore All Listings</span>
             <ArrowUpRight size={16} />
           </button>
         </div>
 
         {/* PROPERTY CARDS GRID */}
-        <div className="featured-v2-grid">
-          {propertiesList.map((item, idx) => {
+        {propertiesList.length > 0 ? (
+          <div className="featured-v2-grid">
+            {propertiesList.map((item, idx) => {
             const isFav = favorites.includes(item.id);
             const priceText = item.priceLabel || (item.price ? `₹${item.price}` : "Price on Request");
 
@@ -204,6 +205,27 @@ function FeaturedProperties() {
             );
           })}
         </div>
+        ) : !loading && (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "54px 24px",
+              background: "rgba(255, 255, 255, 0.02)",
+              border: "1px dashed rgba(255, 255, 255, 0.1)",
+              borderRadius: "16px",
+              color: "#94A3B8",
+              margin: "16px 0 0",
+            }}
+          >
+            <Building size={36} style={{ margin: "0 auto 12px", opacity: 0.5 }} />
+            <h3 style={{ color: "#FFFFFF", fontSize: "17px", fontWeight: 600, margin: "0 0 6px" }}>
+              No Featured Properties Listed
+            </h3>
+            <p style={{ fontSize: "13.5px", margin: 0, color: "#94A3B8" }}>
+              New verified property listings will appear here as soon as they are published.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

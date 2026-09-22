@@ -23,7 +23,6 @@ import {
 import "./PropertyDetails.css";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
-import { FALLBACK_PROPERTIES } from "../data/properties";
 
 function PropertyDetails() {
   const { id } = useParams();
@@ -68,6 +67,13 @@ const [visit, setVisit] = useState({
 
   useEffect(() => {
     const fetchProperty = async () => {
+      const LEGACY_IDS = new Set([1, 18, 19, 20, 21, 22]);
+      if (LEGACY_IDS.has(Number(id))) {
+        setError("Property not found or has been removed.");
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError("");
@@ -79,43 +85,17 @@ const [visit, setVisit] = useState({
         const data = await response.json();
 
         if (!response.ok || !data.property) {
-          const fallback = FALLBACK_PROPERTIES.find(p => String(p.id) === String(id));
-          if (fallback) {
-            setProperty({
-              ...fallback,
-              images: [
-                { id: "1", image_url: fallback.image, sort_order: 0 },
-                { id: "2", image_url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80", sort_order: 1 },
-                { id: "3", image_url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80", sort_order: 2 }
-              ]
-            });
-            setError("");
-            return;
-          }
           throw new Error(
             data.message ||
-              "Failed to load property"
+              "Property not found or is no longer available."
           );
         }
 
         setProperty(data.property);
 
       } catch (err) {
-        console.warn("Property fetch fallback:", err.message);
-        const fallback = FALLBACK_PROPERTIES.find(p => String(p.id) === String(id));
-        if (fallback) {
-          setProperty({
-            ...fallback,
-            images: [
-              { id: "1", image_url: fallback.image, sort_order: 0 },
-              { id: "2", image_url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80", sort_order: 1 },
-              { id: "3", image_url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80", sort_order: 2 }
-            ]
-          });
-          setError("");
-        } else {
-          setError("Unable to load property details");
-        }
+        console.warn("Property fetch error:", err.message);
+        setError("Property not found or is no longer available.");
       } finally {
         setLoading(false);
       }

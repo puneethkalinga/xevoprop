@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "../lib/api";
-import { properties as fallbackProperties } from "../data/properties";
 import "./Search.css";
 
 export default function Search() {
@@ -60,8 +59,10 @@ export default function Search() {
 
         const data = await apiFetch(`/search?${query.toString()}`).catch(() => null);
 
-        if (data && Array.isArray(data.properties) && data.properties.length > 0) {
-          setResults(data.properties);
+        if (data && Array.isArray(data.properties)) {
+          const LEGACY_IDS = new Set([1, 18, 19, 20, 21, 22]);
+          const clean = data.properties.filter((p) => !LEGACY_IDS.has(Number(p.id)));
+          setResults(clean);
           return;
         }
       } catch (error) {
@@ -70,47 +71,7 @@ export default function Search() {
         setLoading(false);
       }
 
-      // Filter verified fallback dataset so user ALWAYS gets realistic listings
-      let filtered = [...fallbackProperties];
-
-      if (city.trim()) {
-        const needle = city.toLowerCase().trim();
-        filtered = filtered.filter(
-          (p) =>
-            p.city?.toLowerCase().includes(needle) ||
-            p.location?.toLowerCase().includes(needle) ||
-            p.locality?.toLowerCase().includes(needle)
-        );
-      }
-
-      if (type && type !== "All") {
-        filtered = filtered.filter(
-          (p) => p.type?.toLowerCase() === type.toLowerCase()
-        );
-      }
-
-      if (bedrooms && bedrooms !== "All") {
-        const bedNum = parseInt(bedrooms, 10);
-        if (!isNaN(bedNum)) {
-          filtered = filtered.filter((p) => p.bedrooms >= bedNum);
-        }
-      }
-
-      if (maxPrice) {
-        if (maxPrice.includes("-")) {
-          const [min, max] = maxPrice.split("-").map(Number);
-          filtered = filtered.filter((p) => p.price >= min && p.price <= max);
-        } else if (maxPrice.endsWith("+")) {
-          const min = parseInt(maxPrice, 10);
-          filtered = filtered.filter((p) => p.price >= min);
-        } else {
-          const max = Number(maxPrice);
-          if (!isNaN(max)) filtered = filtered.filter((p) => p.price <= max);
-        }
-      }
-
-      // If strict filter yields 0, still show closest matches
-      setResults(filtered.length > 0 ? filtered : fallbackProperties.slice(0, 3));
+      setResults([]);
     };
 
     searchProperties();

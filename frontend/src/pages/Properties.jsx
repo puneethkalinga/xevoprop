@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 
 import "./Properties.css";
-import { properties as fallbackProperties } from "../data/properties";
 
 const API_BASE =
   import.meta.env.VITE_API_URL || "https://xevoprop.onrender.com/api";
@@ -51,19 +50,24 @@ function Properties() {
       setError("");
 
       const response = await fetch(`${API_BASE}/properties`, {
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(6000),
       });
 
       const data = await response.json();
 
-      if (response.ok && data && Array.isArray(data.properties) && data.properties.length > 0) {
-        setProperties(data.properties);
+      if (response.ok && data && Array.isArray(data.properties)) {
+        // Exclude the 6 legacy placeholder properties [1, 18, 19, 20, 21, 22] so the platform is completely clean
+        const LEGACY_IDS = new Set([1, 18, 19, 20, 21, 22]);
+        const cleanProperties = data.properties.filter(
+          (p) => !LEGACY_IDS.has(Number(p.id))
+        );
+        setProperties(cleanProperties);
       } else {
-        setProperties(fallbackProperties);
+        setProperties([]);
       }
     } catch (err) {
-      console.warn("Using verified local portfolio cache:", err.message);
-      setProperties(fallbackProperties);
+      console.warn("Properties fetch error:", err.message);
+      setProperties([]);
     } finally {
       setLoading(false);
     }
@@ -406,11 +410,25 @@ function Properties() {
             ) : filteredProperties.length === 0 ? (
               <div className="properties-empty-state">
                 <Home size={36} />
-                <h3>No properties match your filters</h3>
-                <p>Try clearing filters or expanding your price and location range.</p>
-                <button type="button" onClick={resetFilters} className="empty-reset-btn">
-                  Reset all filters
-                </button>
+                <h3>{properties.length === 0 ? "No Properties Available Right Now" : "No properties match your filters"}</h3>
+                <p>
+                  {properties.length === 0
+                    ? "There are no active property listings at the moment. New verified listings will appear here once published."
+                    : "Try clearing filters or expanding your price and location range."}
+                </p>
+                {properties.length === 0 ? (
+                  <Link
+                    to="/list-property"
+                    className="empty-reset-btn"
+                    style={{ textDecoration: "none", display: "inline-block", marginTop: "8px" }}
+                  >
+                    List Your Property
+                  </Link>
+                ) : (
+                  <button type="button" onClick={resetFilters} className="empty-reset-btn">
+                    Reset all filters
+                  </button>
+                )}
               </div>
             ) : (
               <div className="property-grid">
