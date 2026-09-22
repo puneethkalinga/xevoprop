@@ -15,7 +15,7 @@ export const MASTER_ADMIN_CREDENTIALS = {
   role: "Admin",
   status: "approved",
   company: "Xevoproptech Pvt Ltd",
-  phone: "9876543210",
+  phone: "+91 98765 43210",
 };
 
 const INITIAL_USERS = [
@@ -335,3 +335,42 @@ export function findUserByCredentials(identifier) {
       (digits && u.phone?.replace(/\D/g, "") === digits)
   );
 }
+
+/**
+ * Update user fields in the local store
+ */
+export function updateUserInStore(updatedUser) {
+  if (!updatedUser) return;
+  const users = getStoredUsers();
+  const idx = users.findIndex(
+    (u) =>
+      String(u.id) === String(updatedUser.id) ||
+      (u.email && u.email.toLowerCase() === updatedUser.email?.toLowerCase()) ||
+      (u.username && u.username.toLowerCase() === updatedUser.username?.toLowerCase())
+  );
+  if (idx !== -1) {
+    users[idx] = { ...users[idx], ...updatedUser };
+    saveStoredUsers(users);
+  }
+}
+
+/**
+ * Update user password in the local store
+ */
+export function updatePasswordInStore(userIdOrEmail, newPassword) {
+  const users = getStoredUsers();
+  const target = String(userIdOrEmail).toLowerCase();
+  const user = users.find(
+    (u) =>
+      String(u.id) === target ||
+      u.email?.toLowerCase() === target ||
+      u.username?.toLowerCase() === target
+  );
+  if (user) {
+    user.password = newPassword;
+    saveStoredUsers(users);
+    return true;
+  }
+  return false;
+}
+

@@ -141,7 +141,9 @@ export default function AdminDashboard() {
 
           <div className="admin-user-col">
             <div className="admin-profile-pill">
-              <div className="admin-avatar">👑</div>
+              <div className="admin-avatar">
+                <ShieldCheck size={18} color="#38bdf8" />
+              </div>
               <div>
                 <strong>{user?.name || "Xevoproptech Admin"}</strong>
                 <span>admin.xevoproptech · Superuser</span>

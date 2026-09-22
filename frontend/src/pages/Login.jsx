@@ -368,10 +368,10 @@ function Login() {
               style={{
                 fontSize: "12px",
                 padding: "7px 12px",
-                background: "#fef2f2",
-                border: "1px solid #fecaca",
+                background: "#eff6ff",
+                border: "1px solid #bfdbfe",
                 borderRadius: "6px",
-                color: "#b91c1c",
+                color: "#1d4ed8",
                 cursor: "pointer",
                 fontWeight: "700",
                 display: "inline-flex",
@@ -379,7 +379,7 @@ function Login() {
                 gap: "5px",
               }}
             >
-              👑 Master Admin
+              <ShieldCheck size={14} /> Master Admin
             </button>
             <button
               type="button"

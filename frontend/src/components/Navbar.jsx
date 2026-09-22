@@ -3,6 +3,7 @@ import {
   Bell,
   Menu,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -126,9 +127,17 @@ function Navbar() {
                 <Link
                   to="/admin/dashboard"
                   className="nav-dashboard-pill"
-                  style={{ background: "#dc2626", color: "#ffffff", borderColor: "#b91c1c" }}
+                  style={{
+                    background: "#0f172a",
+                    color: "#38bdf8",
+                    borderColor: "#334155",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
                 >
-                  👑 Admin Portal
+                  <ShieldCheck size={14} />
+                  Admin Portal
                 </Link>
               ) : (
                 <Link to="/dashboard" className="nav-dashboard-pill">
