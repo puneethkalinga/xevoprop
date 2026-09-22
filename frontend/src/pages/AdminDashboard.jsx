@@ -50,8 +50,12 @@ export default function AdminDashboard() {
   const [notification, setNotification] = useState("");
 
   useEffect(() => {
+    if (!user || user.role !== "Admin") {
+      navigate("/dashboard");
+      return;
+    }
     loadData();
-  }, []);
+  }, [user, navigate]);
 
   const loadData = () => {
     const loadedUsers = getStoredUsers();
@@ -330,16 +334,6 @@ export default function AdminDashboard() {
                         <tr key={u.id} className={isPending ? "row-pending" : ""}>
                           <td>
                             <div className="user-name-cell">
-                              <img
-                                src={
-                                  u.avatar ||
-                                  `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-                                    u.name
-                                  )}`
-                                }
-                                alt={u.name}
-                                className="user-table-avatar"
-                              />
                               <div>
                                 <strong className="user-cell-name">{u.name}</strong>
                                 <span className="user-cell-company">{u.company || "Individual Account"}</span>

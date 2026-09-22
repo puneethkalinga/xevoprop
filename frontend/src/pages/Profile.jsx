@@ -452,23 +452,7 @@ function Profile() {
         <div className="profile-card">
           <div className="profile-card-top">
             <div className="profile-avatar">
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name || "Profile"}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              ) : (
-                getInitial()
-              )}
+              {getInitial()}
             </div>
 
             <div className="profile-main-info">

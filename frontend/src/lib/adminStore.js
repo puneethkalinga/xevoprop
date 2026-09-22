@@ -31,7 +31,6 @@ const INITIAL_USERS = [
     registeredAt: "2026-09-01T09:00:00.000Z",
     approvedAt: "2026-09-01T09:00:00.000Z",
     approvedBy: "System Root",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
     totalLogins: 42,
   },
   {
@@ -46,7 +45,6 @@ const INITIAL_USERS = [
     registeredAt: "2026-09-22T10:30:00.000Z",
     approvedAt: "2026-09-22T11:00:00.000Z",
     approvedBy: "Xevoproptech Admin",
-    avatar: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=150&q=80",
     totalLogins: 12,
   },
   {
@@ -61,7 +59,6 @@ const INITIAL_USERS = [
     registeredAt: "2026-09-20T14:15:00.000Z",
     approvedAt: "2026-09-20T14:30:00.000Z",
     approvedBy: "Xevoproptech Admin",
-    avatar: "https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=150&q=80",
     totalLogins: 28,
   },
 ];
@@ -117,19 +114,25 @@ export function getStoredUsers() {
       return INITIAL_USERS;
     }
     const parsed = JSON.parse(raw);
-    // Auto-clean any dummy test accounts (id 102, 103)
-    const cleaned = parsed.filter(
-      (u) =>
-        u.id !== 102 &&
-        u.id !== 103 &&
-        !u.email?.includes("apexrealty") &&
-        !u.email?.includes("hyderabadhomes")
-    );
-    if (cleaned.length !== parsed.length) {
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cleaned));
-      return cleaned;
-    }
-    return parsed;
+    // Auto-clean any dummy test accounts (id 102, 103) and purge legacy photo avatars
+    const cleaned = parsed
+      .filter(
+        (u) =>
+          u.id !== 102 &&
+          u.id !== 103 &&
+          !u.email?.includes("apexrealty") &&
+          !u.email?.includes("hyderabadhomes")
+      )
+      .map((u) => {
+        if ("avatar" in u) {
+          const copy = { ...u };
+          delete copy.avatar;
+          return copy;
+        }
+        return u;
+      });
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cleaned));
+    return cleaned;
   } catch {
     return INITIAL_USERS;
   }
