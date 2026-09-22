@@ -233,17 +233,28 @@ router.post("/register", async (req, res) => {
     const cleanPhone = phone.replace(/\D/g, "").slice(-10);
     const hash = await bcrypt.hash(password, 10);
 
-    const result = await pool.query(
-      `INSERT INTO users (username, name, email, phone, password, role)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, username, name, email, phone, role, created_at`,
-      [trimmedEmail, name.trim(), trimmedEmail, cleanPhone, hash, role]
-    );
+    const result = await pool
+      .query(
+        `INSERT INTO users (username, name, email, phone, password, role, status)
+         VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+         RETURNING id, username, name, email, phone, role, status, created_at`,
+        [trimmedEmail, name.trim(), trimmedEmail, cleanPhone, hash, role]
+      )
+      .catch(async () => {
+        return pool.query(
+          `INSERT INTO users (username, name, email, phone, password, role)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           RETURNING id, username, name, email, phone, role, created_at`,
+          [trimmedEmail, name.trim(), trimmedEmail, cleanPhone, hash, role]
+        );
+      });
 
     const user = result.rows[0];
+    user.status = user.status || "pending";
+
     res.status(201).json({
       success: true,
-      message: "Registration successful! Welcome to Xevoprop.",
+      message: "Registration successful! Your account is pending admin approval.",
       token: signToken(user),
       user,
     });
@@ -264,12 +275,50 @@ router.post("/login", async (req, res) => {
     }
 
     const trimmed = email.trim().toLowerCase();
+
+    // 1. MASTER ADMIN AUTHENTICATION
+    if (
+      trimmed === "admin.xevoproptech" ||
+      trimmed === "admin.xevoproptech@gmail.com" ||
+      trimmed === "admin@xevoprop.com"
+    ) {
+      if (password !== "XEVOPROPTECH@2026") {
+        return res.status(401).json({
+          success: false,
+          message: "Incorrect master admin password. Please try again.",
+        });
+      }
+
+      const adminUser = {
+        id: 1,
+        username: "admin.xevoproptech",
+        name: "Xevoproptech Admin",
+        email: "admin.xevoproptech@gmail.com",
+        role: "Admin",
+        status: "approved",
+      };
+
+      return res.json({
+        success: true,
+        message: "Master Admin authentication successful.",
+        token: signToken(adminUser),
+        user: adminUser,
+      });
+    }
+
     const result = await pool.query(
-      `SELECT id, username, name, email, phone, password, role, created_at
+      `SELECT id, username, name, email, phone, password, role, status, created_at
        FROM users
        WHERE LOWER(email)=$1 OR phone=$1`,
       [trimmed]
-    );
+    ).catch(async () => {
+      return pool.query(
+        `SELECT id, username, name, email, phone, password, role, created_at
+         FROM users
+         WHERE LOWER(email)=$1 OR phone=$1`,
+        [trimmed]
+      );
+    });
 
     if (!result.rows.length) {
       return res.status(401).json({
@@ -283,6 +332,21 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Incorrect password. Please try again or reset your credentials.",
+      });
+    }
+
+    // CHECK APPROVAL STATUS
+    if (user.status === "pending") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is awaiting Admin Approval. You can only log in once an administrator approves your profile.",
+      });
+    }
+
+    if (user.status === "rejected") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account registration was rejected by the admin. Please contact support.",
       });
     }
 

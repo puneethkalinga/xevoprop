@@ -37,6 +37,7 @@ import Leads from "./pages/Leads";
 import MyProjects from "./pages/MyProjects";
 import AddProject from "./pages/AddProject";
 import EditProject from "./pages/EditProject";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -296,6 +297,32 @@ function App() {
               <EditProject />
             </ProtectedRoute>
           }
+        />
+
+        {/* =====================================================
+            ADMIN ROUTES
+        ===================================================== */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/login"
+          element={<Login />}
         />
 
       </Routes>

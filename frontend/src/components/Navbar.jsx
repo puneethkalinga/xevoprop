@@ -61,10 +61,18 @@ function Navbar() {
     { label: "Leads", path: "/leads" },
   ];
 
+  /* ADMIN NAVIGATION */
+  const adminLinks = [
+    { label: "Admin Control", path: "/admin/dashboard" },
+    { label: "Properties", path: "/properties" },
+    { label: "Projects & Ventures", path: "/projects" },
+  ];
+
   let navLinks = publicLinks;
   if (user) {
     const role = user.role || "Buyer";
-    if (role === "Seller") navLinks = sellerLinks;
+    if (role === "Admin") navLinks = adminLinks;
+    else if (role === "Seller") navLinks = sellerLinks;
     else if (role === "Developer" || role === "Builder") navLinks = developerLinks;
     else navLinks = buyerLinks;
   }
@@ -114,9 +122,19 @@ function Navbar() {
                 <Bell size={18} />
               </Link>
 
-              <Link to="/dashboard" className="nav-dashboard-pill">
-                Dashboard
-              </Link>
+              {user.role === "Admin" ? (
+                <Link
+                  to="/admin/dashboard"
+                  className="nav-dashboard-pill"
+                  style={{ background: "#dc2626", color: "#ffffff", borderColor: "#b91c1c" }}
+                >
+                  👑 Admin Portal
+                </Link>
+              ) : (
+                <Link to="/dashboard" className="nav-dashboard-pill">
+                  Dashboard
+                </Link>
+              )}
 
               <Link to="/profile" className="nav-avatar-btn" aria-label="Profile" title="My Profile">
                 <span>{user.name?.charAt(0).toUpperCase() || "U"}</span>

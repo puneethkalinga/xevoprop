@@ -14,11 +14,14 @@ import {
   X,
   ArrowRight,
   Sparkles,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 
 import { LogoWordmark } from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../lib/api";
+import { registerPendingUser } from "../lib/adminStore";
 import "./Auth.css";
 
 // Block known spam and disposable domains
@@ -64,6 +67,7 @@ function Register() {
   const [otpError, setOtpError] = useState("");
   const [resendTimer, setResendTimer] = useState(30);
   const [verificationToken, setVerificationToken] = useState("");
+  const [isSubmittedForApproval, setIsSubmittedForApproval] = useState(false);
 
   const digitRefs = useRef([]);
 
@@ -210,7 +214,7 @@ function Register() {
     }
   };
 
-  // Step 2: Verify OTP and complete Registration
+  // Step 2: Verify OTP and complete Registration (Pending Admin Approval)
   const handleVerifyAndComplete = async (e) => {
     e?.preventDefault();
     const enteredCode = otpDigits.join("");
@@ -223,7 +227,7 @@ function Register() {
     setOtpError("");
 
     try {
-      // 1. Verify OTP with backend
+      // 1. Verify OTP with backend or demo match
       let verifiedToken = "verified_" + Date.now();
       try {
         const otpRes = await apiFetch("/auth/verify-otp", {
@@ -234,14 +238,29 @@ function Register() {
           verifiedToken = otpRes.verificationToken;
         }
       } catch (err) {
-        // If code matches demo code, allow seamless passage
         if (demoOtp && enteredCode !== demoOtp) {
           throw new Error("Invalid verification code. Please check and re-enter.");
         }
       }
 
-      // 2. Register user
-      const regData = await apiFetch("/auth/register", {
+      // 2. Register user in central store as PENDING ADMIN APPROVAL
+      try {
+        registerPendingUser({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          password,
+          role,
+        });
+      } catch (storeErr) {
+        // If already exists, notify user
+        if (storeErr.message?.includes("already exists")) {
+          throw storeErr;
+        }
+      }
+
+      // 3. Sync to backend API if available
+      apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           name: name.trim(),
@@ -251,26 +270,10 @@ function Register() {
           role,
           verificationToken: verifiedToken,
         }),
-      }).catch(() => {
-        // Local simulation fallback
-        const mockUser = {
-          id: Date.now(),
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          phone: phone.trim(),
-          role,
-        };
-        return {
-          success: true,
-          token: "mock_jwt_token_" + Date.now(),
-          user: mockUser,
-        };
-      });
+      }).catch((e) => console.log("Backend register sync notice:", e.message));
 
-      login(regData);
-      localStorage.setItem("username", regData.user.name || regData.user.username || "");
       setIsOtpModalOpen(false);
-      navigate("/dashboard");
+      setIsSubmittedForApproval(true);
     } catch (err) {
       setOtpError(err.message || "Registration failed. Please verify credentials.");
     } finally {
@@ -293,17 +296,101 @@ function Register() {
           VERIFIED ONBOARDING
         </div>
 
-        <h1>Create an Account</h1>
-        <p className="auth-subtitle">
-          Join India's premier verified PropTech ecosystem. Zero spam, direct owner & developer connections.
-        </p>
+        {isSubmittedForApproval ? (
+          <div style={{ textAlign: "center", padding: "10px 0 16px" }}>
+            <div
+              style={{
+                width: "64px",
+                height: "64px",
+                background: "#fef3c7",
+                color: "#d97706",
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+                border: "2px solid #fde68a",
+              }}
+            >
+              <Clock size={32} />
+            </div>
 
-        {error && (
-          <div className="auth-banner error">
-            <AlertCircle size={16} style={{ flexShrink: 0 }} />
-            <span>{error}</span>
+            <h1 style={{ fontSize: "24px", fontWeight: "800", color: "#0f172a", margin: "0 0 6px" }}>
+              Registration Submitted!
+            </h1>
+
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "#fffbeb",
+                border: "1px solid #fde68a",
+                color: "#b45309",
+                fontWeight: "700",
+                fontSize: "12px",
+                padding: "4px 14px",
+                borderRadius: "999px",
+                margin: "8px 0 16px",
+                letterSpacing: "0.03em",
+              }}
+            >
+              ⏳ AWAITING ADMIN APPROVAL
+            </div>
+
+            <p style={{ color: "#475569", fontSize: "14px", lineHeight: "1.6", margin: "0 0 20px" }}>
+              Thank you, <strong>{name}</strong>. Your <strong>{role}</strong> profile has been registered.
+              To ensure verified authenticity across Xevoprop, your account must first be reviewed and <strong>approved by the Administrator</strong> before you can log in, access your dashboard, and upload properties or projects.
+            </p>
+
+            <div
+              style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "10px",
+                padding: "16px",
+                textAlign: "left",
+                marginBottom: "24px",
+                fontSize: "13px",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ color: "#64748b" }}>Registered Role:</span>
+                <strong style={{ color: "#0f172a" }}>{role}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ color: "#64748b" }}>Email Address:</span>
+                <strong style={{ color: "#0f172a" }}>{email}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#64748b" }}>Mobile Phone:</span>
+                <strong style={{ color: "#0f172a" }}>+91 {phone.replace(/\D/g, "")}</strong>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="auth-submit"
+              onClick={() => navigate("/login")}
+              style={{ width: "100%", justifyContent: "center" }}
+            >
+              Go to Sign In
+              <ArrowRight size={16} />
+            </button>
           </div>
-        )}
+        ) : (
+          <>
+            <h1>Create an Account</h1>
+            <p className="auth-subtitle">
+              Join India's premier verified PropTech ecosystem. Zero spam, direct owner & developer connections.
+            </p>
+
+            {error && (
+              <div className="auth-banner error">
+                <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                <span>{error}</span>
+              </div>
+            )}
 
         <form className="auth-form" onSubmit={handleInitiateRegister}>
           {/* FULL NAME */}
@@ -425,6 +512,8 @@ function Register() {
         <p className="auth-switch">
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
+          </>
+        )}
       </div>
 
       {/* =========================================================

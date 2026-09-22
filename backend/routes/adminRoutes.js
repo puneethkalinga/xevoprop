@@ -578,4 +578,139 @@ router.delete(
 );
 
 
+/* =========================================================
+   GET ALL USERS FOR APPROVAL & AUDIT
+   GET /api/admin/users
+========================================================= */
+
+router.get(
+  "/users",
+  authenticateToken,
+  authorizeRoles("Admin"),
+  async (req, res) => {
+    try {
+      const { status, role } = req.query;
+      let query = `
+        SELECT id, username, name, email, phone, role, status, created_at
+        FROM users
+      `;
+      const conditions = [];
+      const values = [];
+
+      if (status) {
+        values.push(status);
+        conditions.push(`status = $${values.length}`);
+      }
+
+      if (role) {
+        values.push(role);
+        conditions.push(`role = $${values.length}`);
+      }
+
+      if (conditions.length) {
+        query += ` WHERE ` + conditions.join(" AND ");
+      }
+
+      query += ` ORDER BY created_at DESC`;
+
+      const result = await pool.query(query, values).catch(async () => {
+        return pool.query(`SELECT id, username, name, email, phone, role, created_at FROM users ORDER BY created_at DESC`);
+      });
+
+      res.json({
+        success: true,
+        users: result.rows,
+      });
+    } catch (error) {
+      console.error("ADMIN GET USERS ERROR:", error);
+      res.status(500).json({ success: false, message: "Failed to load users." });
+    }
+  }
+);
+
+
+/* =========================================================
+   APPROVE USER ACCOUNT
+   PUT /api/admin/users/:id/approve
+========================================================= */
+
+router.put(
+  "/users/:id/approve",
+  authenticateToken,
+  authorizeRoles("Admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(
+        `UPDATE users
+         SET status = 'approved', updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1
+         RETURNING id, username, name, email, phone, role, status`,
+        [id]
+      ).catch(async () => {
+        return pool.query(
+          `UPDATE users SET status = 'approved' WHERE id = $1 RETURNING id, username, name, email, phone, role`,
+          [id]
+        );
+      });
+
+      if (!result.rows.length) {
+        return res.status(404).json({ success: false, message: "User not found." });
+      }
+
+      res.json({
+        success: true,
+        message: "User account approved successfully.",
+        user: result.rows[0],
+      });
+    } catch (error) {
+      console.error("ADMIN APPROVE USER ERROR:", error);
+      res.status(500).json({ success: false, message: "Failed to approve user." });
+    }
+  }
+);
+
+
+/* =========================================================
+   REJECT USER ACCOUNT
+   PUT /api/admin/users/:id/reject
+========================================================= */
+
+router.put(
+  "/users/:id/reject",
+  authenticateToken,
+  authorizeRoles("Admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(
+        `UPDATE users
+         SET status = 'rejected', updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1
+         RETURNING id, username, name, email, phone, role, status`,
+        [id]
+      ).catch(async () => {
+        return pool.query(
+          `UPDATE users SET status = 'rejected' WHERE id = $1 RETURNING id, username, name, email, phone, role`,
+          [id]
+        );
+      });
+
+      if (!result.rows.length) {
+        return res.status(404).json({ success: false, message: "User not found." });
+      }
+
+      res.json({
+        success: true,
+        message: "User account rejected.",
+        user: result.rows[0],
+      });
+    } catch (error) {
+      console.error("ADMIN REJECT USER ERROR:", error);
+      res.status(500).json({ success: false, message: "Failed to reject user." });
+    }
+  }
+);
+
+
 module.exports = router;

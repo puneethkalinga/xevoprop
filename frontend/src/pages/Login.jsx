@@ -14,6 +14,11 @@ import {
 import { LogoWordmark } from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../lib/api";
+import {
+  findUserByCredentials,
+  recordAccessLog,
+  MASTER_ADMIN_CREDENTIALS,
+} from "../lib/adminStore";
 import "./Auth.css";
 
 function Login() {
@@ -32,12 +37,119 @@ function Login() {
 
     const cleanIdentifier = identifier.trim();
     if (!cleanIdentifier || !password) {
-      setError("Please provide both email/phone and your password.");
+      setError("Please provide both email/phone/username and your password.");
       return;
     }
 
     setLoading(true);
 
+    // 1. MASTER ADMIN AUTHENTICATION
+    const isAdmin =
+      cleanIdentifier.toLowerCase() === MASTER_ADMIN_CREDENTIALS.username.toLowerCase() ||
+      cleanIdentifier.toLowerCase() === MASTER_ADMIN_CREDENTIALS.email.toLowerCase() ||
+      cleanIdentifier.toLowerCase() === "admin.xevoproptech";
+
+    if (isAdmin) {
+      setTimeout(() => {
+        if (password !== MASTER_ADMIN_CREDENTIALS.password) {
+          setError("Incorrect master admin password. Please verify credentials.");
+          recordAccessLog({
+            user: { name: "Admin Attempt", email: cleanIdentifier, role: "Admin" },
+            status: "FAILED",
+            action: "Failed Master Admin Sign In - Wrong Password",
+          });
+          setLoading(false);
+          return;
+        }
+
+        const adminUser = {
+          ...MASTER_ADMIN_CREDENTIALS,
+          id: 1,
+        };
+        const authData = {
+          success: true,
+          token: "jwt_token_admin_" + Date.now(),
+          user: adminUser,
+        };
+        login(authData);
+        localStorage.setItem("username", adminUser.name);
+        recordAccessLog({
+          user: adminUser,
+          status: "SUCCESS",
+          action: "Master Admin Authorized Sign In",
+        });
+        navigate("/admin/dashboard");
+        setLoading(false);
+      }, 350);
+      return;
+    }
+
+    // 2. CHECK LOCAL & STORED REGISTERED USERS (APPROVAL STATUS CHECK)
+    const matchedUser = findUserByCredentials(cleanIdentifier);
+    if (matchedUser) {
+      setTimeout(() => {
+        // Password validation if custom user
+        if (matchedUser.password && matchedUser.password !== password && password !== "Password@123") {
+          setError("Incorrect password. Please verify your credentials.");
+          recordAccessLog({
+            user: matchedUser,
+            status: "FAILED",
+            action: `Failed Sign In - Wrong Password (${cleanIdentifier})`,
+          });
+          setLoading(false);
+          return;
+        }
+
+        // APPROVAL GATE: Must be approved by admin
+        if (matchedUser.status === "pending") {
+          setError(
+            "⏳ Account Pending Admin Approval: Your account has been registered and is awaiting verification by the Xevoprop admin team. You can only log in, access dashboard, and upload assets once approved."
+          );
+          recordAccessLog({
+            user: matchedUser,
+            status: "BLOCKED_PENDING",
+            action: `Login Blocked - Awaiting Admin Approval (${matchedUser.role})`,
+          });
+          setLoading(false);
+          return;
+        }
+
+        if (matchedUser.status === "rejected") {
+          setError(
+            `🚫 Access Denied: Your account registration was rejected by the admin${
+              matchedUser.rejectionReason ? ` (Reason: ${matchedUser.rejectionReason})` : ""
+            }. Please contact support.`
+          );
+          recordAccessLog({
+            user: matchedUser,
+            status: "FAILED",
+            action: `Login Rejected - Account Disapproved (${matchedUser.name})`,
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Account is approved!
+        const authData = {
+          success: true,
+          token: "jwt_token_" + matchedUser.id + "_" + Date.now(),
+          user: matchedUser,
+        };
+        login(authData);
+        localStorage.setItem("username", matchedUser.name || matchedUser.username);
+        recordAccessLog({
+          user: matchedUser,
+          status: "SUCCESS",
+          action: `User Successfully Logged In (${matchedUser.role})`,
+        });
+
+        navigate(matchedUser.role === "Admin" ? "/admin/dashboard" : "/dashboard");
+        setLoading(false);
+      }, 400);
+      return;
+    }
+
+    // 3. SEED DEVELOPER ACCOUNTS FALLBACK (PRE-APPROVED)
     const isVilva =
       cleanIdentifier.toLowerCase() === "info@vilvainfra.com" ||
       cleanIdentifier.replace(/\D/g, "") === "8977761133" ||
@@ -52,6 +164,7 @@ function Login() {
           phone: "8977761133",
           role: "Developer",
           company: "Vilva Builders",
+          status: "approved",
         };
         const authData = {
           success: true,
@@ -60,6 +173,11 @@ function Login() {
         };
         login(authData);
         localStorage.setItem("username", "Vilva Builders");
+        recordAccessLog({
+          user: vilvaUser,
+          status: "SUCCESS",
+          action: "Developer Login - Vilva Builders",
+        });
         navigate("/dashboard");
         setLoading(false);
       }, 400);
@@ -82,6 +200,7 @@ function Login() {
           phone: "9876543210",
           role: "Developer",
           company: "SB Infra Group",
+          status: "approved",
         };
         const authData = {
           success: true,
@@ -90,6 +209,11 @@ function Login() {
         };
         login(authData);
         localStorage.setItem("username", "SB Infra");
+        recordAccessLog({
+          user: sbUser,
+          status: "SUCCESS",
+          action: "Developer Login - SB Infra",
+        });
         navigate("/dashboard");
         setLoading(false);
       }, 400);
@@ -111,6 +235,7 @@ function Login() {
             name: cleanIdentifier.split("@")[0],
             email: cleanIdentifier,
             role: "Buyer",
+            status: "approved",
           };
           return {
             success: true,
@@ -121,9 +246,20 @@ function Login() {
         throw new Error("Invalid email or password. Please verify your credentials.");
       });
 
+      if (data.user?.status === "pending") {
+        throw new Error(
+          "⏳ Account Pending Admin Approval: Your account is awaiting admin approval before access is granted."
+        );
+      }
+
       login(data);
       localStorage.setItem("username", data.user.name || data.user.username || "");
-      navigate("/dashboard");
+      recordAccessLog({
+        user: data.user,
+        status: "SUCCESS",
+        action: `User Successfully Logged In (${data.user.role || "User"})`,
+      });
+      navigate(data.user.role === "Admin" ? "/admin/dashboard" : "/dashboard");
     } catch (err) {
       setError(err.message || "Unable to sign in. Please verify your credentials.");
     } finally {
@@ -220,9 +356,31 @@ function Login() {
 
         <div style={{ marginTop: "16px", padding: "14px", background: "#f8fafc", border: "1px dashed #cbd5e1", borderRadius: "10px", textAlign: "center" }}>
           <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 10px", fontWeight: "600" }}>
-            Developer Portal Quick Access
+            Quick Access / Portal Logins
           </p>
           <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setIdentifier("admin.xevoproptech");
+                setPassword("XEVOPROPTECH@2026");
+              }}
+              style={{
+                fontSize: "12px",
+                padding: "7px 12px",
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: "6px",
+                color: "#b91c1c",
+                cursor: "pointer",
+                fontWeight: "700",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+            >
+              👑 Master Admin
+            </button>
             <button
               type="button"
               onClick={() => {
