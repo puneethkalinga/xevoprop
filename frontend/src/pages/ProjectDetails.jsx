@@ -224,19 +224,6 @@ export default function ProjectDetails() {
               </div>
             )}
 
-            {/* BADGES ON IMAGE */}
-            <div className="project-image-badge-group">
-              <div className="project-image-badge">
-                <ShieldCheck size={14} />
-                Verified by Xevoprop
-              </div>
-              {project.rera && (
-                <div className="project-rera-badge">
-                  RERA: {project.rera}
-                </div>
-              )}
-            </div>
-
             {/* VIDEO TOGGLE BUTTON */}
             {project.videoUrl && !showVideo && (
               <button
