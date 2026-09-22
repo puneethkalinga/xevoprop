@@ -785,3 +785,69 @@
   font-size: 12px;
   color: #64748b;
 }
+
+/* Upload Media Icons Row */
+.edit-project-page .upload-media-icons-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #1264ff;
+  margin-bottom: 4px;
+}
+
+.edit-project-page .upload-media-icons-row svg {
+  margin: 0 !important;
+}
+
+/* Video Card in Gallery */
+.edit-project-page .project-gallery-card.is-video-card {
+  background: #0f172a;
+}
+
+.edit-project-page .video-preview-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-project-page .video-preview-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* Media Type Badges */
+.edit-project-page .media-type-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.edit-project-page .media-type-badge.photo-badge {
+  background: rgba(15, 23, 42, 0.75);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.edit-project-page .media-type-badge.video-badge {
+  background: rgba(15, 23, 42, 0.88);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+}

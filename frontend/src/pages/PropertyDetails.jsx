@@ -18,11 +18,18 @@ import {
   ChevronRight,
   X,
   Send,
+  Play,
+  Video,
 } from "lucide-react";
 
 import "./PropertyDetails.css";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+
+const isVideoUrl = (url) => {
+  if (!url || typeof url !== "string") return false;
+  return /\.(mp4|mov|webm|mkv|avi|m4v)(\?.*)?$/i.test(url) || url.includes("/video/upload/");
+};
 
 function PropertyDetails() {
   const { id } = useParams();
@@ -416,19 +423,29 @@ const submitVisit = async () => {
 
           <div className="gallery-main">
 
-            <img
-              src={
-                images[currentImage] ||
-                property.image ||
-                "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
-              }
-              alt={property.title}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src =
-                  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80";
-              }}
-            />
+            {isVideoUrl(images[currentImage] || property.image) ? (
+              <video
+                src={images[currentImage] || property.image}
+                controls
+                playsInline
+                preload="metadata"
+                style={{ width: "100%", height: "100%", objectFit: "cover", background: "#0b1736" }}
+              />
+            ) : (
+              <img
+                src={
+                  images[currentImage] ||
+                  property.image ||
+                  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
+                }
+                alt={property.title}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src =
+                    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80";
+                }}
+              />
+            )}
 
             {property.verified && (
               <span className="gallery-verified">
@@ -472,34 +489,51 @@ const submitVisit = async () => {
           <div className="gallery-thumbnails">
 
             {images.map(
-              (image, index) => (
-                <button
-                  key={`${image}-${index}`}
-                  type="button"
-                  className={
-                    index ===
-                    currentImage
-                      ? "gallery-thumb active"
-                      : "gallery-thumb"
-                  }
-                  onClick={() =>
-                    setCurrentImage(
-                      index
-                    )
-                  }
-                  aria-label={`View photo ${index + 1}`}
-                >
-                  <img
-                    src={image}
-                    alt=""
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src =
-                        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80";
-                    }}
-                  />
-                </button>
-              )
+              (image, index) => {
+                const isVideo = isVideoUrl(image);
+                return (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    className={
+                      index ===
+                      currentImage
+                        ? "gallery-thumb active"
+                        : "gallery-thumb"
+                    }
+                    onClick={() =>
+                      setCurrentImage(
+                        index
+                      )
+                    }
+                    aria-label={`View ${isVideo ? "video" : "photo"} ${index + 1}`}
+                    style={{ position: "relative", overflow: "hidden" }}
+                  >
+                    {isVideo ? (
+                      <div style={{ position: "relative", width: "100%", height: "100%", background: "#0b1736", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <video
+                          src={image}
+                          preload="metadata"
+                          style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+                        />
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", color: "#fff" }}>
+                          <Play size={13} fill="#fff" />
+                        </div>
+                      </div>
+                    ) : (
+                      <img
+                        src={image}
+                        alt=""
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src =
+                            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80";
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              }
             )}
 
           </div>

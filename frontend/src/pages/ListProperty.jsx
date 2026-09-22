@@ -9,6 +9,7 @@ import {
   MapPin,
   IndianRupee,
   Image as ImageIcon,
+  Video,
   X,
 } from "lucide-react";
 
@@ -90,65 +91,55 @@ function ListProperty() {
     }));
   };
 
-  const handleBudgetPreset = (preset) => {
-    setForm((previous) => ({
-      ...previous,
-      price: preset.priceText,
-      price_value: String(preset.value),
-    }));
-  };
-
   /* =========================
      IMAGE SELECT
   ========================= */
 
   const handleImageSelect = (e) => {
-    const files = Array.from(
-      e.target.files || []
-    );
-
+    const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const remainingSlots =
-      10 - selectedImages.length;
+    const remainingSlots = 30 - selectedImages.length;
+    const filesToAdd = files.slice(0, remainingSlots);
 
-    const filesToAdd =
-      files.slice(0, remainingSlots);
+    for (const file of filesToAdd) {
+      const isImage = file.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|heic)$/i.test(file.name);
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(file.name);
 
-    const invalidFile =
-      filesToAdd.find(
-        (file) =>
-          !file.type.startsWith("image/") ||
-          file.size > 50 * 1024 * 1024
-      );
+      if (!isImage && !isVideo) {
+        setSubmitError(`File "${file.name}" is not a supported image or video format.`);
+        e.target.value = "";
+        return;
+      }
 
-    if (invalidFile) {
-      setSubmitError(
-        "Only images up to 50MB each are allowed."
-      );
+      if (isImage && file.size > 100 * 1024 * 1024) {
+        setSubmitError(`Photo "${file.name}" exceeds the 100MB limit.`);
+        e.target.value = "";
+        return;
+      }
 
-      e.target.value = "";
-      return;
+      if (isVideo && file.size > 250 * 1024 * 1024) {
+        setSubmitError(`Video "${file.name}" exceeds the 250MB limit.`);
+        e.target.value = "";
+        return;
+      }
     }
 
-    const newImages =
-      filesToAdd.map((file) => ({
+    const newImages = filesToAdd.map((file) => {
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(file.name);
+      return {
         file,
+        name: file.name,
+        size: file.size,
+        sizeFormatted: (file.size / (1024 * 1024)).toFixed(1) + " MB",
+        type: isVideo ? "video" : "image",
+        preview: URL.createObjectURL(file),
+        id: `${file.name}-${file.lastModified}-${Math.random()}`,
+      };
+    });
 
-        preview:
-          URL.createObjectURL(file),
-
-        id:
-          `${file.name}-${file.lastModified}-${Math.random()}`,
-      }));
-
-    setSelectedImages((previous) => [
-      ...previous,
-      ...newImages,
-    ]);
-
+    setSelectedImages((previous) => [...previous, ...newImages]);
     setSubmitError("");
-
     e.target.value = "";
   };
 
@@ -805,7 +796,7 @@ function ListProperty() {
         <div className="listing-field full">
 
           <label>
-            PROPERTY PHOTOS
+            PROPERTY PHOTOS & VIDEOS (UP TO 30)
           </label>
 
           <div
@@ -815,24 +806,27 @@ function ListProperty() {
             }
           >
 
-            <ImageIcon size={30} />
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center", marginBottom: "4px" }}>
+              <ImageIcon size={30} />
+              <Video size={30} color="#1264ff" />
+            </div>
 
             <strong>
-              Click to upload property photos
+              Click to upload property photos & videos
             </strong>
 
             <span>
-              JPG, PNG or WEBP • Up to 10MB each
+              Photos up to 100MB (JPG, PNG, WEBP) • Videos up to 250MB (MP4, MOV, WEBM)
             </span>
 
             <span>
-              Select up to 10 photos
+              Upload up to 30 media files per property
             </span>
 
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*,.mp4,.mov,.webm,.mkv,.avi"
               multiple
               onChange={
                 handleImageSelect
@@ -855,12 +849,42 @@ function ListProperty() {
                 <div
                   className="uploaded-image"
                   key={image.id}
+                  style={{ position: "relative" }}
                 >
 
-                  <img
-                    src={image.preview}
-                    alt="Property preview"
-                  />
+                  {image.type === "video" ? (
+                    <div style={{ position: "relative", width: "100%", height: "100%", background: "#0b1736" }}>
+                      <video
+                        src={image.preview}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: "6px",
+                          left: "6px",
+                          background: "rgba(15, 23, 42, 0.85)",
+                          color: "#38bdf8",
+                          fontSize: "8px",
+                          fontWeight: 700,
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          letterSpacing: "0.04em",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        🎥 VIDEO · {image.sizeFormatted}
+                      </span>
+                    </div>
+                  ) : (
+                    <img
+                      src={image.preview}
+                      alt="Property preview"
+                    />
+                  )}
 
                   <button
                     type="button"
@@ -940,12 +964,42 @@ function ListProperty() {
                 <div
                   className="uploaded-image"
                   key={image.id}
+                  style={{ position: "relative" }}
                 >
 
-                  <img
-                    src={image.preview}
-                    alt="Property preview"
-                  />
+                  {image.type === "video" ? (
+                    <div style={{ position: "relative", width: "100%", height: "100%", background: "#0b1736" }}>
+                      <video
+                        src={image.preview}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: "6px",
+                          left: "6px",
+                          background: "rgba(15, 23, 42, 0.85)",
+                          color: "#38bdf8",
+                          fontSize: "8px",
+                          fontWeight: 700,
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          letterSpacing: "0.04em",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        🎥 VIDEO
+                      </span>
+                    </div>
+                  ) : (
+                    <img
+                      src={image.preview}
+                      alt="Property preview"
+                    />
+                  )}
 
                 </div>
               )

@@ -5,6 +5,9 @@ import {
   Plus,
   Loader2,
   ImagePlus,
+  Video,
+  Film,
+  Play,
   X,
   FileText,
   Download,
@@ -94,39 +97,58 @@ function AddProject() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const maxTotal = 15;
+    const maxTotal = 30; // Expanded to 30 media items (supports multiple photos and multiple videos)
     const remaining = maxTotal - selectedImages.length;
     if (remaining <= 0) {
-      setError(`You can upload a maximum of ${maxTotal} photos.`);
+      setError(`You can upload a maximum of ${maxTotal} photos and videos.`);
       e.target.value = "";
       return;
     }
 
     const filesToAdd = files.slice(0, remaining);
 
-    const invalidType = filesToAdd.find((f) => !f.type.startsWith("image/"));
-    if (invalidType) {
-      setError("Please select valid image files (JPG, PNG, WEBP).");
-      e.target.value = "";
-      return;
-    }
+    // Validate each file for valid image or video type and respective limits
+    for (const f of filesToAdd) {
+      const isImage = f.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|heic)$/i.test(f.name);
+      const isVideo = f.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(f.name);
 
-    const oversized = filesToAdd.find((f) => f.size > 50 * 1024 * 1024);
-    if (oversized) {
-      setError(`File "${oversized.name}" exceeds the 50MB limit. Max 50MB per photo.`);
-      e.target.value = "";
-      return;
+      if (!isImage && !isVideo) {
+        setError(`File "${f.name}" is not a supported format. Please upload photos (JPG, PNG, WEBP) or videos (MP4, MOV, WEBM).`);
+        e.target.value = "";
+        return;
+      }
+
+      // 100MB photo limit
+      if (isImage && f.size > 100 * 1024 * 1024) {
+        setError(`Photo "${f.name}" exceeds the 100MB limit. Max 100MB per photo.`);
+        e.target.value = "";
+        return;
+      }
+
+      // 250MB video limit
+      if (isVideo && f.size > 250 * 1024 * 1024) {
+        setError(`Video "${f.name}" exceeds the 250MB limit. Max 250MB per video walkthrough.`);
+        e.target.value = "";
+        return;
+      }
     }
 
     setError("");
 
-    const newImages = filesToAdd.map((file) => ({
-      id: `${file.name}-${file.lastModified}-${Math.random()}`,
-      file,
-      preview: URL.createObjectURL(file),
-    }));
+    const newMedia = filesToAdd.map((file) => {
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(file.name);
+      return {
+        id: `${file.name}-${file.lastModified}-${Math.random()}`,
+        file,
+        name: file.name,
+        size: file.size,
+        sizeFormatted: (file.size / (1024 * 1024)).toFixed(1) + " MB",
+        type: isVideo ? "video" : "image",
+        preview: URL.createObjectURL(file),
+      };
+    });
 
-    setSelectedImages((prev) => [...prev, ...newImages]);
+    setSelectedImages((prev) => [...prev, ...newMedia]);
     e.target.value = "";
   };
 
@@ -645,16 +667,16 @@ function AddProject() {
                 </div>
               </div>
 
-              {/* MULTI-IMAGE GALLERY UPLOAD */}
+              {/* MULTI-MEDIA GALLERY UPLOAD (PHOTOS & VIDEOS) */}
 
               <div className="project-form-group full">
                 <div className="project-images-header">
                   <label>
-                    Project photos
+                    Project Media (Photos & Videos)
                     <span>*</span>
                   </label>
                   <span className="project-images-counter">
-                    {selectedImages.length} / 15 photos selected · Max 50MB each
+                    {selectedImages.length} / 30 media items selected ({selectedImages.filter((m) => m.type !== "video").length} photos, {selectedImages.filter((m) => m.type === "video").length} videos) · Photos max 100MB · Videos max 250MB
                   </span>
                 </div>
 
@@ -666,22 +688,25 @@ function AddProject() {
                       fileInputRef.current?.click()
                     }
                   >
-                    <ImagePlus size={32} />
+                    <div className="upload-media-icons-row">
+                      <ImagePlus size={30} />
+                      <Video size={30} />
+                    </div>
 
                     <strong>
-                      Upload project photos (Multiple)
+                      Upload Project Photos & Walkthrough Videos (Multiple)
                     </strong>
 
                     <span>
-                      JPG, PNG or WEBP · Max 50MB per photo
+                      JPG, PNG, WEBP, MP4, MOV, WEBM, MKV · Max 100MB per photo · Max 250MB per video
                     </span>
 
                     <span className="project-upload-hint">
-                      Select multiple photos to showcase your property
+                      Select multiple high-resolution photos, drone footage, and HD walkthrough videos to showcase your property
                     </span>
 
                     <em>
-                      Choose Photos
+                      Choose Photos & Videos
                     </em>
                   </button>
                 ) : (
@@ -690,12 +715,31 @@ function AddProject() {
                       {selectedImages.map((img, idx) => (
                         <div
                           key={img.id}
-                          className={`project-gallery-card ${idx === 0 ? "is-cover" : ""}`}
+                          className={`project-gallery-card ${idx === 0 ? "is-cover" : ""} ${img.type === "video" ? "is-video-card" : ""}`}
                         >
-                          <img
-                            src={img.preview}
-                            alt={`Upload ${idx + 1}`}
-                          />
+                          {img.type === "video" ? (
+                            <div className="video-preview-wrapper">
+                              <video
+                                src={img.preview}
+                                controls
+                                preload="metadata"
+                                playsInline
+                              />
+                              <span className="media-type-badge video-badge">
+                                <Video size={11} /> VIDEO · {img.sizeFormatted}
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <img
+                                src={img.preview}
+                                alt={`Upload ${idx + 1}`}
+                              />
+                              <span className="media-type-badge photo-badge">
+                                PHOTO {img.sizeFormatted ? `· ${img.sizeFormatted}` : ""}
+                              </span>
+                            </>
+                          )}
 
                           <div className="gallery-card-header">
                             {idx === 0 ? (
@@ -716,7 +760,8 @@ function AddProject() {
                               type="button"
                               className="remove-photo-btn"
                               onClick={() => removeImage(img.id)}
-                              aria-label="Remove photo"
+                              aria-label="Remove media"
+                              title="Remove media"
                             >
                               <X size={15} />
                             </button>
@@ -724,21 +769,21 @@ function AddProject() {
                         </div>
                       ))}
 
-                      {selectedImages.length < 15 && (
+                      {selectedImages.length < 30 && (
                         <button
                           type="button"
                           className="project-add-more-card"
                           onClick={() => fileInputRef.current?.click()}
                         >
                           <Plus size={26} />
-                          <strong>Add More Photos</strong>
-                          <span>Up to 50MB each</span>
+                          <strong>Add More Photos & Videos</strong>
+                          <span>Photos up to 100MB · Videos up to 250MB</span>
                         </button>
                       )}
                     </div>
 
                     <div className="project-gallery-footer">
-                      <span>The first photo is automatically used as the primary card cover.</span>
+                      <span>The first item is automatically used as the primary card cover. You can upload multiple walkthrough videos and photos.</span>
                       <button
                         type="button"
                         className="project-clear-btn"
@@ -756,7 +801,7 @@ function AddProject() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="image/png,image/jpeg,image/webp,image/jpg,image/heic,video/mp4,video/quicktime,video/webm,video/x-matroska,video/x-msvideo"
                   multiple
                   onChange={handleImageSelect}
                   hidden

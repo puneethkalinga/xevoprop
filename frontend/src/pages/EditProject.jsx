@@ -5,7 +5,9 @@ import {
   Save,
   Loader2,
   ImagePlus,
+  Video,
   X,
+  Plus,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -173,38 +175,57 @@ function EditProject() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const maxTotal = 15;
+    const maxTotal = 30; // Increased to 30 media items (supports multiple photos and multiple videos)
     const currentTotal = existingImages.length + newImages.length;
     const remaining = maxTotal - currentTotal;
     if (remaining <= 0) {
-      setError(`You can upload a maximum of ${maxTotal} photos.`);
+      setError(`You can upload a maximum of ${maxTotal} photos and videos.`);
       e.target.value = "";
       return;
     }
 
     const filesToAdd = files.slice(0, remaining);
 
-    const invalidType = filesToAdd.find((f) => !f.type.startsWith("image/"));
-    if (invalidType) {
-      setError("Please select valid image files (JPG, PNG, WEBP).");
-      e.target.value = "";
-      return;
-    }
+    // Validate each file for valid image or video type and respective limits
+    for (const f of filesToAdd) {
+      const isImage = f.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|heic)$/i.test(f.name);
+      const isVideo = f.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(f.name);
 
-    const oversized = filesToAdd.find((f) => f.size > 50 * 1024 * 1024);
-    if (oversized) {
-      setError(`File "${oversized.name}" exceeds the 50MB limit. Max 50MB per photo.`);
-      e.target.value = "";
-      return;
+      if (!isImage && !isVideo) {
+        setError(`File "${f.name}" is not a supported format. Please upload photos (JPG, PNG, WEBP) or videos (MP4, MOV, WEBM).`);
+        e.target.value = "";
+        return;
+      }
+
+      // 100MB photo limit
+      if (isImage && f.size > 100 * 1024 * 1024) {
+        setError(`Photo "${f.name}" exceeds the 100MB limit. Max 100MB per photo.`);
+        e.target.value = "";
+        return;
+      }
+
+      // 250MB video limit
+      if (isVideo && f.size > 250 * 1024 * 1024) {
+        setError(`Video "${f.name}" exceeds the 250MB limit. Max 250MB per video walkthrough.`);
+        e.target.value = "";
+        return;
+      }
     }
 
     setError("");
 
-    const added = filesToAdd.map((file) => ({
-      id: `${file.name}-${file.lastModified}-${Math.random()}`,
-      file,
-      preview: URL.createObjectURL(file),
-    }));
+    const added = filesToAdd.map((file) => {
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(file.name);
+      return {
+        id: `${file.name}-${file.lastModified}-${Math.random()}`,
+        file,
+        name: file.name,
+        size: file.size,
+        sizeFormatted: (file.size / (1024 * 1024)).toFixed(1) + " MB",
+        type: isVideo ? "video" : "image",
+        preview: URL.createObjectURL(file),
+      };
+    });
 
     setNewImages((prev) => [...prev, ...added]);
     e.target.value = "";
@@ -691,13 +712,13 @@ function EditProject() {
                 </div>
               </div>
 
-              {/* MULTI-IMAGE GALLERY UPLOAD */}
+              {/* MULTI-MEDIA GALLERY UPLOAD (PHOTOS & VIDEOS) */}
 
               <div className="project-form-group full">
                 <div className="project-images-header">
-                  <label>Project photos</label>
+                  <label>Project Media (Photos & Videos)</label>
                   <span className="project-images-counter">
-                    {existingImages.length + newImages.length} / 15 photos · Max 50MB each
+                    {existingImages.length + newImages.length} / 30 media items · Photos max 100MB · Videos max 250MB
                   </span>
                 </div>
 
@@ -707,60 +728,99 @@ function EditProject() {
                     className="project-image-upload"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <ImagePlus size={32} />
-                    <strong>Upload project photos (Multiple)</strong>
-                    <span>JPG, PNG or WEBP · Max 50MB per photo</span>
+                    <div className="upload-media-icons-row">
+                      <ImagePlus size={30} />
+                      <Video size={30} />
+                    </div>
+                    <strong>Upload Project Photos & Videos (Multiple)</strong>
+                    <span>JPG, PNG, WEBP, MP4, MOV, WEBM, MKV · Max 100MB per photo · Max 250MB per video</span>
                     <span className="project-upload-hint">
-                      Select multiple photos to showcase your property
+                      Select multiple photos and property walkthrough videos to showcase your property
                     </span>
-                    <em>Choose Photos</em>
+                    <em>Choose Photos & Videos</em>
                   </button>
                 ) : (
                   <div className="project-gallery-wrapper">
                     <div className="project-gallery-grid">
-                      {/* Existing uploaded photos */}
-                      {existingImages.map((img, idx) => (
-                        <div
-                          key={`existing-${img.id || idx}`}
-                          className={`project-gallery-card ${idx === 0 && newImages.length === 0 ? "is-cover" : ""}`}
-                        >
-                          <img
-                            src={img.image_url || img}
-                            alt={`Project photo ${idx + 1}`}
-                          />
+                      {/* Existing uploaded media */}
+                      {existingImages.map((img, idx) => {
+                        const isVideo = img.type === "video" || String(img.image_url || img).match(/\.(mp4|mov|webm|mkv|avi)$/i);
+                        return (
+                          <div
+                            key={`existing-${img.id || idx}`}
+                            className={`project-gallery-card ${idx === 0 && newImages.length === 0 ? "is-cover" : ""} ${isVideo ? "is-video-card" : ""}`}
+                          >
+                            {isVideo ? (
+                              <div className="video-preview-wrapper">
+                                <video
+                                  src={img.image_url || img}
+                                  controls
+                                  preload="metadata"
+                                  playsInline
+                                />
+                                <span className="media-type-badge video-badge">
+                                  <Video size={11} /> VIDEO
+                                </span>
+                              </div>
+                            ) : (
+                              <img
+                                src={img.image_url || img}
+                                alt={`Project photo ${idx + 1}`}
+                              />
+                            )}
 
-                          <div className="gallery-card-header">
-                            <span className="cover-tag">Existing Photo</span>
-                            <button
-                              type="button"
-                              className="remove-photo-btn"
-                              onClick={() => removeExistingImage(img.id)}
-                              aria-label="Remove photo"
-                            >
-                              <X size={15} />
-                            </button>
+                            <div className="gallery-card-header">
+                              <span className="cover-tag">Existing Media</span>
+                              <button
+                                type="button"
+                                className="remove-photo-btn"
+                                onClick={() => removeExistingImage(img.id)}
+                                aria-label="Remove media"
+                              >
+                                <X size={15} />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
 
-                      {/* Newly selected photos */}
+                      {/* Newly selected media */}
                       {newImages.map((img, idx) => (
                         <div
                           key={img.id}
-                          className="project-gallery-card is-new"
+                          className={`project-gallery-card is-new ${img.type === "video" ? "is-video-card" : ""}`}
                         >
-                          <img
-                            src={img.preview}
-                            alt={`New photo ${idx + 1}`}
-                          />
+                          {img.type === "video" ? (
+                            <div className="video-preview-wrapper">
+                              <video
+                                src={img.preview}
+                                controls
+                                preload="metadata"
+                                playsInline
+                              />
+                              <span className="media-type-badge video-badge">
+                                <Video size={11} /> VIDEO · {img.sizeFormatted}
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <img
+                                src={img.preview}
+                                alt={`New photo ${idx + 1}`}
+                              />
+                              <span className="media-type-badge photo-badge">
+                                PHOTO {img.sizeFormatted ? `· ${img.sizeFormatted}` : ""}
+                              </span>
+                            </>
+                          )}
 
                           <div className="gallery-card-header">
-                            <span className="cover-tag new-tag">New Photo</span>
+                            <span className="cover-tag new-tag">New Media</span>
                             <button
                               type="button"
                               className="remove-photo-btn"
                               onClick={() => removeNewImage(img.id)}
-                              aria-label="Remove photo"
+                              aria-label="Remove media"
                             >
                               <X size={15} />
                             </button>
@@ -768,21 +828,21 @@ function EditProject() {
                         </div>
                       ))}
 
-                      {existingImages.length + newImages.length < 15 && (
+                      {existingImages.length + newImages.length < 30 && (
                         <button
                           type="button"
                           className="project-add-more-card"
                           onClick={() => fileInputRef.current?.click()}
                         >
                           <Plus size={26} />
-                          <strong>Add More Photos</strong>
-                          <span>Up to 50MB each</span>
+                          <strong>Add More Photos & Videos</strong>
+                          <span>Photos up to 100MB · Videos up to 250MB</span>
                         </button>
                       )}
                     </div>
 
                     <div className="project-gallery-footer">
-                      <span>Existing photos are preserved. New photos will be uploaded upon saving.</span>
+                      <span>Existing media is preserved. New photos and videos will be saved to your project.</span>
                     </div>
                   </div>
                 )}
@@ -790,7 +850,7 @@ function EditProject() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="image/png,image/jpeg,image/webp,image/jpg,image/heic,video/mp4,video/quicktime,video/webm,video/x-matroska,video/x-msvideo"
                   multiple
                   onChange={handleImageSelect}
                   hidden

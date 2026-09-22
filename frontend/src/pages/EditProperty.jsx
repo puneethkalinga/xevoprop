@@ -8,6 +8,7 @@ import {
   MapPin,
   IndianRupee,
   Image as ImageIcon,
+  Video,
   X,
   Check,
   Star,
@@ -22,6 +23,11 @@ import {
   BUDGET_PRESETS,
 } from "../data/locationAndTypes";
 import "./ListProperty.css";
+
+const isVideoUrl = (url) => {
+  if (!url || typeof url !== "string") return false;
+  return /\.(mp4|mov|webm|mkv|avi|m4v)(\?.*)?$/i.test(url) || url.includes("/video/upload/");
+};
 
 function EditProperty() {
   const { id } = useParams();
@@ -241,36 +247,47 @@ function EditProperty() {
     setError("");
     setSuccess("");
 
-    const validFiles = [];
-
-    for (const file of files) {
-      if (!file.type.startsWith("image/")) {
-        setError(
-          "Only image files are allowed."
-        );
-        continue;
-      }
-
-      if (
-        file.size >
-        50 * 1024 * 1024
-      ) {
-        setError(
-          `${file.name} is larger than 50MB.`
-        );
-        continue;
-      }
-
-      validFiles.push(file);
+    const remainingSlots = 30 - (images.length + newImages.length);
+    if (remainingSlots <= 0) {
+      setError("Maximum 30 media files (photos & videos) allowed per property.");
+      event.target.value = "";
+      return;
     }
 
-    const preparedImages =
-      validFiles.map((file) => ({
-        id: `${file.name}-${file.lastModified}-${Math.random()}`,
-        file,
-        preview:
-          URL.createObjectURL(file),
-      }));
+    const filesToAdd = files.slice(0, remainingSlots);
+    const validFiles = [];
+
+    for (const file of filesToAdd) {
+      const isImage = file.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|heic)$/i.test(file.name);
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(file.name);
+
+      if (!isImage && !isVideo) {
+        setError(`File "${file.name}" is not a supported image or video format.`);
+        continue;
+      }
+
+      if (isImage && file.size > 100 * 1024 * 1024) {
+        setError(`Photo "${file.name}" exceeds the 100MB limit.`);
+        continue;
+      }
+
+      if (isVideo && file.size > 250 * 1024 * 1024) {
+        setError(`Video "${file.name}" exceeds the 250MB limit.`);
+        continue;
+      }
+
+      validFiles.push({ file, isVideo });
+    }
+
+    const preparedImages = validFiles.map(({ file, isVideo }) => ({
+      id: `${file.name}-${file.lastModified}-${Math.random()}`,
+      file,
+      name: file.name,
+      size: file.size,
+      sizeFormatted: (file.size / (1024 * 1024)).toFixed(1) + " MB",
+      type: isVideo ? "video" : "image",
+      preview: URL.createObjectURL(file),
+    }));
 
     setNewImages((previous) => [
       ...previous,
@@ -1242,6 +1259,7 @@ function EditProperty() {
 
                     const isPrimary =
                       index === 0;
+                    const isVideo = isVideoUrl(image.image_url);
 
                     return (
                       <div
@@ -1253,14 +1271,43 @@ function EditProperty() {
                         }}
                       >
 
-                        <img
-                          src={
-                            image.image_url
-                          }
-                          alt={`Property ${
-                            index + 1
-                          }`}
-                        />
+                        {isVideo ? (
+                          <div style={{ position: "relative", width: "100%", height: "100%", background: "#0b1736" }}>
+                            <video
+                              src={image.image_url}
+                              controls
+                              playsInline
+                              preload="metadata"
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            />
+                            <span
+                              style={{
+                                position: "absolute",
+                                top: "7px",
+                                left: "7px",
+                                background: "rgba(15, 23, 42, 0.85)",
+                                color: "#38bdf8",
+                                fontSize: "8px",
+                                fontWeight: 700,
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                letterSpacing: "0.04em",
+                                pointerEvents: "none",
+                              }}
+                            >
+                              🎥 VIDEO
+                            </span>
+                          </div>
+                        ) : (
+                          <img
+                            src={
+                              image.image_url
+                            }
+                            alt={`Property ${
+                              index + 1
+                            }`}
+                          />
+                        )}
 
                         {/* PRIMARY */}
 
@@ -1409,39 +1456,69 @@ function EditProperty() {
                       }}
                     >
 
-                      <img
-                        src={
-                          image.preview
-                        }
-                        alt="New property"
-                      />
+                      {image.type === "video" ? (
+                        <div style={{ position: "relative", width: "100%", height: "100%", background: "#0b1736" }}>
+                          <video
+                            src={image.preview}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                          <span
+                            style={{
+                              position: "absolute",
+                              left: "7px",
+                              bottom: "7px",
+                              padding: "4px 7px",
+                              borderRadius: "5px",
+                              background: "rgba(2,6,23,0.85)",
+                              color: "#38bdf8",
+                              fontSize: "8px",
+                              fontWeight: "700",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            🎥 VIDEO · {image.sizeFormatted}
+                          </span>
+                        </div>
+                      ) : (
+                        <img
+                          src={
+                            image.preview
+                          }
+                          alt="New property"
+                        />
+                      )}
 
-                      <span
-                        style={{
-                          position:
-                            "absolute",
-                          left: "7px",
-                          bottom: "7px",
-                          padding:
-                            "4px 7px",
-                          borderRadius:
-                            "5px",
-                          background:
-                            "rgba(2,6,23,0.85)",
-                          color:
-                            "#00d9ff",
-                          fontSize:
-                            "8px",
-                          fontWeight:
-                            "700",
-                        }}
-                      >
-                        NEW
-                      </span>
+                      {image.type !== "video" && (
+                        <span
+                          style={{
+                            position:
+                              "absolute",
+                            left: "7px",
+                            bottom: "7px",
+                            padding:
+                              "4px 7px",
+                            borderRadius:
+                              "5px",
+                            background:
+                              "rgba(2,6,23,0.85)",
+                            color:
+                              "#00d9ff",
+                            fontSize:
+                              "8px",
+                            fontWeight:
+                              "700",
+                          }}
+                        >
+                          NEW
+                        </span>
+                      )}
 
                       <button
                         type="button"
-                        title="Remove selected image"
+                        title="Remove selected media"
                         onClick={() =>
                           removeNewImage(
                             image.id
@@ -1495,25 +1572,27 @@ function EditProperty() {
               }}
             >
 
-              <ImageIcon size={30} />
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center", marginBottom: "4px" }}>
+                <ImageIcon size={30} />
+                <Video size={30} color="#1264ff" />
+              </div>
 
               <strong>
-                Upload property photos
+                Upload property photos & videos
               </strong>
 
               <span>
-                JPG, PNG or WEBP • Up to
-                10MB each
+                Photos up to 100MB (JPG, PNG, WEBP) • Videos up to 250MB (MP4, MOV, WEBM)
               </span>
 
               <span>
-                You can select multiple photos
+                Upload up to 30 media files per property
               </span>
 
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*,.mp4,.mov,.webm,.mkv,.avi"
                 multiple
                 onChange={
                   handleImageSelect

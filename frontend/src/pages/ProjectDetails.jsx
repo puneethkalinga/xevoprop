@@ -29,6 +29,11 @@ import "./ProjectDetails.css";
 
 const ALL_LOCAL_PROJECTS = [...vilvaProjects, ...sbInfraVentures];
 
+const isVideoMedia = (url) => {
+  if (!url || typeof url !== "string") return false;
+  return /\.(mp4|mov|webm|mkv|avi|m4v)(\?.*)?$/i.test(url) || url.includes("/video/upload/");
+};
+
 export default function ProjectDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -246,6 +251,17 @@ export default function ProjectDetails() {
                   ✕ View Photos
                 </button>
               </div>
+            ) : isVideoMedia(currentImg) ? (
+              <div className="project-video-frame local-video-container" style={{ width: "100%", height: "100%", minHeight: "360px" }}>
+                <video
+                  src={currentImg}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="project-html5-video"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
             ) : currentImg ? (
               <img
                 src={currentImg}
@@ -283,19 +299,36 @@ export default function ProjectDetails() {
                     <span>▶ 🔇 Video</span>
                   </button>
                 )}
-                {allImages.map((thumbUrl, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`project-thumb-btn ${
-                      idx === selectedImageIndex ? "active" : ""
-                    }`}
-                    onClick={() => setSelectedImageIndex(idx)}
-                    title={`View photo ${idx + 1}`}
-                  >
-                    <img src={thumbUrl} alt={`${project.name} photo ${idx + 1}`} />
-                  </button>
-                ))}
+                {allImages.map((thumbUrl, idx) => {
+                  const isVid = isVideoMedia(thumbUrl);
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`project-thumb-btn ${
+                        idx === selectedImageIndex ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedImageIndex(idx)}
+                      title={`View ${isVid ? "video" : "photo"} ${idx + 1}`}
+                      style={{ position: "relative", overflow: "hidden" }}
+                    >
+                      {isVid ? (
+                        <div style={{ position: "relative", width: "100%", height: "100%", background: "#0b1736", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <video
+                            src={thumbUrl}
+                            preload="metadata"
+                            style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+                          />
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", color: "#fff" }}>
+                            <Play size={12} fill="#fff" />
+                          </div>
+                        </div>
+                      ) : (
+                        <img src={thumbUrl} alt={`${project.name} photo ${idx + 1}`} />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

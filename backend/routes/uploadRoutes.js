@@ -29,14 +29,18 @@ const upload = multer({
   storage: multer.memoryStorage(),
 
   limits: {
-    fileSize: 50 * 1024 * 1024,
+    fileSize: 250 * 1024 * 1024, // 250MB limit to support high-res photos and HD/4K videos
   },
 
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
+    if (
+      file.mimetype.startsWith("image/") ||
+      file.mimetype.startsWith("video/") ||
+      file.mimetype === "application/octet-stream"
+    ) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files are allowed"));
+      cb(new Error("Only image and video files are allowed"));
     }
   },
 });
@@ -122,7 +126,7 @@ router.post(
             cloudinary.uploader.upload_stream(
               {
                 folder: "xevoprop/properties",
-                resource_type: "image",
+                resource_type: "auto",
               },
               (error, result) => {
                 if (error) {
@@ -263,7 +267,7 @@ router.post(
             cloudinary.uploader.upload_stream(
               {
                 folder: "xevoprop/projects",
-                resource_type: "image",
+                resource_type: "auto",
               },
               (error, result) => {
                 if (error) {

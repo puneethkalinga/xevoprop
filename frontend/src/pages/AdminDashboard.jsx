@@ -29,6 +29,8 @@ import {
   Eye,
   Bell,
   CheckSquare,
+  Video,
+  Play,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -668,16 +670,35 @@ export default function AdminDashboard() {
                             <p className="sub-description">{sub.description}</p>
                           )}
 
-                          {/* MEDIA PREVIEW */}
+                          {/* MEDIA PREVIEW (PHOTOS & VIDEOS) */}
                           {sub.images && sub.images.length > 0 && (
                             <div className="sub-media-section">
                               <span className="sub-section-title">
-                                Uploaded Project Photos & Media ({sub.images.length})
+                                Uploaded Project Media ({sub.images.length}) ·{" "}
+                                {sub.images.filter((m) => m.type !== "video").length} Photos,{" "}
+                                {sub.images.filter((m) => m.type === "video").length} Videos
                               </span>
                               <div className="sub-media-gallery">
                                 {sub.images.map((img, idx) => (
-                                  <div key={idx} className="sub-media-thumb">
-                                    <img src={img.url} alt={`Upload ${idx + 1}`} />
+                                  <div
+                                    key={idx}
+                                    className={`sub-media-thumb ${img.type === "video" ? "is-video-thumb" : ""}`}
+                                  >
+                                    {img.type === "video" ? (
+                                      <div className="admin-video-thumb-container">
+                                        <video
+                                          src={img.url}
+                                          controls
+                                          preload="metadata"
+                                          playsInline
+                                        />
+                                        <span className="media-sub-tag">
+                                          <Video size={10} /> VIDEO
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <img src={img.url} alt={`Upload ${idx + 1}`} />
+                                    )}
                                   </div>
                                 ))}
                               </div>

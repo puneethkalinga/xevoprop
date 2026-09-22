@@ -16,6 +16,11 @@ import "./Properties.css";
 const API_BASE =
   import.meta.env.VITE_API_URL || "https://xevoprop.onrender.com/api";
 
+const isVideoUrl = (url) => {
+  if (!url || typeof url !== "string") return false;
+  return /\.(mp4|mov|webm|mkv|avi|m4v)(\?.*)?$/i.test(url) || url.includes("/video/upload/");
+};
+
 function Properties() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -444,20 +449,36 @@ function Properties() {
                     >
                       {/* CARD MEDIA */}
                       <div className="card-image-wrap">
-                        <img
-                          src={
-                            property.image ||
-                            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
-                          }
-                          alt={property.title}
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src =
-                              "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80";
-                          }}
-                        />
+                        {isVideoUrl(property.image) ? (
+                          <video
+                            src={property.image}
+                            muted
+                            loop
+                            playsInline
+                            autoPlay
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <img
+                            src={
+                              property.image ||
+                              "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
+                            }
+                            alt={property.title}
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src =
+                                "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80";
+                            }}
+                          />
+                        )}
                         <div className="card-badges">
+                          {isVideoUrl(property.image) && (
+                            <span className="card-badge" style={{ background: "rgba(15, 23, 42, 0.85)", color: "#38bdf8" }}>
+                              🎥 Video Tour
+                            </span>
+                          )}
                           {property.verified && (
                             <span className="card-badge verified">
                               <CheckCircle2 size={11} />

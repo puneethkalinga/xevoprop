@@ -419,11 +419,22 @@ const INITIAL_PROJECT_SUBMISSIONS = [
         id: "img_1",
         url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
         name: "Elevation Perspective.jpg",
+        type: "image",
+        sizeFormatted: "4.2 MB",
       },
       {
         id: "img_2",
         url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
         name: "Clubhouse and Courtyard.jpg",
+        type: "image",
+        sizeFormatted: "3.8 MB",
+      },
+      {
+        id: "vid_1",
+        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        name: "Property_Architectural_Walkthrough_HD.mp4",
+        type: "video",
+        sizeFormatted: "48.5 MB",
       },
     ],
   },
@@ -497,11 +508,16 @@ export function submitProjectWithAgreement({
       },
       fileDataUrl: agreementFile?.dataUrl || "/documents/Builder_Listing_Commission_Agreementfinal.docx",
     },
-    images: images.map((img, i) => ({
-      id: img.id || "img_" + i,
-      url: img.preview || img.url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
-      name: img.file?.name || `Project_Photo_${i + 1}.jpg`,
-    })),
+    images: images.map((img, i) => {
+      const isVideo = img.type === "video" || img.file?.type?.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi)$/i.test(img.name || img.file?.name || "");
+      return {
+        id: img.id || "media_" + i,
+        url: img.preview || img.url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+        name: img.file?.name || img.name || (isVideo ? `Project_Video_${i + 1}.mp4` : `Project_Photo_${i + 1}.jpg`),
+        type: isVideo ? "video" : "image",
+        sizeFormatted: img.sizeFormatted || (img.size ? (img.size / (1024 * 1024)).toFixed(1) + " MB" : null),
+      };
+    }),
   };
 
   const updated = [newSubmission, ...submissions];
