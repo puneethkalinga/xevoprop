@@ -18,13 +18,13 @@
 
 /* Sizing variants */
 .logo-small .logo-official-horizontal {
-  height: 32px !important;
+  height: 36px !important;
 }
 
 .logo-default .logo-official-horizontal {
-  height: 42px !important;
+  height: 48px !important;
 }
 
 .logo-large .logo-official-horizontal {
-  height: 48px !important;
+  height: 58px !important;
 }

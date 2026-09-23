@@ -380,76 +380,23 @@ export function updatePasswordInStore(userIdOrEmail, newPassword) {
 const PROJECTS_SUBMISSION_STORAGE_KEY = "xevoprop_project_submissions";
 const NOTIFICATIONS_STORAGE_KEY = "xevoprop_admin_notifications";
 
-const INITIAL_PROJECT_SUBMISSIONS = [
-  {
-    id: "proj_sub_1727001",
-    name: "SB Urban Heights",
-    location: "Financial District, Nanakramguda, Hyderabad",
-    city: "Hyderabad",
-    state: "Telangana",
-    type: "Apartment",
-    usage_type: "Residential",
-    units: 140,
-    price: "₹1.45 Cr onwards",
-    description: "Ultra-luxury high-rise residences with panoramic views, sky lounge, infinity pool, and EV charging stations.",
-    builderId: 46,
-    builderName: "SB Infra",
-    builderEmail: "info@sbinfra.com",
-    builderCompany: "SB Infra Group",
-    builderPhone: "9876543210",
-    status: "pending_approval",
-    submittedAt: "2026-09-22T14:20:00.000Z",
-    reviewedAt: null,
-    reviewedBy: null,
-    rejectionReason: null,
-    agreement: {
-      fileName: "Builder_Listing_Commission_Agreement_SBInfra_Signed.docx",
-      fileSize: "2.4 MB",
-      uploadedAt: "2026-09-22T14:18:30.000Z",
-      status: "digitally_signed",
-      declarations: {
-        readAndAgreed: true,
-        infoAccurate: true,
-        authorized: true,
-      },
-      fileDataUrl: "/documents/Builder_Listing_Commission_Agreementfinal.docx",
-    },
-    images: [
-      {
-        id: "img_1",
-        url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
-        name: "Elevation Perspective.jpg",
-        type: "image",
-        sizeFormatted: "4.2 MB",
-      },
-      {
-        id: "img_2",
-        url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-        name: "Clubhouse and Courtyard.jpg",
-        type: "image",
-        sizeFormatted: "3.8 MB",
-      },
-      {
-        id: "vid_1",
-        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-        name: "Property_Architectural_Walkthrough_HD.mp4",
-        type: "video",
-        sizeFormatted: "48.5 MB",
-      },
-    ],
-  },
-];
+const INITIAL_PROJECT_SUBMISSIONS = [];
 
 export function getStoredProjectSubmissions() {
   try {
     const raw = localStorage.getItem(PROJECTS_SUBMISSION_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(PROJECTS_SUBMISSION_STORAGE_KEY, JSON.stringify(INITIAL_PROJECT_SUBMISSIONS));
-      return INITIAL_PROJECT_SUBMISSIONS;
+      localStorage.setItem(PROJECTS_SUBMISSION_STORAGE_KEY, JSON.stringify([]));
+      return [];
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const cleaned = parsed.filter((p) => p.id !== "proj_sub_1727001");
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(PROJECTS_SUBMISSION_STORAGE_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch {
-    return INITIAL_PROJECT_SUBMISSIONS;
+    return [];
   }
 }
 
