@@ -385,7 +385,7 @@ function Login() {
         </div>
 
         <p className="auth-switch">
-          Don't have an account yet? <Link to="/register">Create one with Mobile OTP</Link>
+          Don't have an account yet? <Link to="/register">Create an account</Link>
         </p>
       </div>
     </div>

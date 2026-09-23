@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Eye,
@@ -8,18 +8,13 @@ import {
   Phone,
   Lock,
   ShieldCheck,
-  Smartphone,
   AlertCircle,
   Loader2,
-  X,
   ArrowRight,
-  Sparkles,
   Clock,
-  CheckCircle2,
 } from "lucide-react";
 
 import { LogoWordmark } from "../components/Logo";
-import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../lib/api";
 import { registerPendingUser } from "../lib/adminStore";
 import "./Auth.css";
@@ -45,7 +40,6 @@ const DISPOSABLE_EMAIL_DOMAINS = new Set([
 
 function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   // Form fields
   const [name, setName] = useState("");
@@ -58,31 +52,9 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Mobile OTP modal state
-  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
-  const [demoOtp, setDemoOtp] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpError, setOtpError] = useState("");
-  const [resendTimer, setResendTimer] = useState(30);
-  const [verificationToken, setVerificationToken] = useState("");
   const [isSubmittedForApproval, setIsSubmittedForApproval] = useState(false);
 
-  const digitRefs = useRef([]);
-
-  // Countdown for OTP resend
-  useEffect(() => {
-    let interval = null;
-    if (isOtpModalOpen && resendTimer > 0) {
-      interval = setInterval(() => {
-        setResendTimer((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isOtpModalOpen, resendTimer]);
-
-  // Validate form before opening OTP step
+  // Validate form
   const validateInitialForm = () => {
     setError("");
 
@@ -105,7 +77,7 @@ function Register() {
 
     const digitsOnly = phone.replace(/\D/g, "");
     if (digitsOnly.length < 10) {
-      setError("Please enter a valid 10-digit mobile number for OTP verification.");
+      setError("Please enter a valid 10-digit mobile number.");
       return false;
     }
 
@@ -117,8 +89,8 @@ function Register() {
     return true;
   };
 
-  // Step 1: Trigger Mobile OTP dispatch
-  const handleInitiateRegister = async (e) => {
+  // Direct Registration (Pending Admin Approval)
+  const handleRegister = async (e) => {
     e.preventDefault();
     if (!validateInitialForm()) return;
 
@@ -126,124 +98,7 @@ function Register() {
     setError("");
 
     try {
-      // Try backend OTP endpoint
-      const res = await apiFetch("/auth/send-otp", {
-        method: "POST",
-        body: JSON.stringify({ phone }),
-      }).catch(() => {
-        // Safe graceful offline fallback for demonstration
-        const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        return {
-          success: true,
-          demoOtp: mockOtp,
-          message: "OTP dispatched to " + phone,
-        };
-      });
-
-      if (res.demoOtp) {
-        setDemoOtp(res.demoOtp);
-      } else {
-        setDemoOtp("123456");
-      }
-
-      setResendTimer(30);
-      setIsOtpModalOpen(true);
-      setOtpDigits(["", "", "", "", "", ""]);
-      setOtpError("");
-      setTimeout(() => digitRefs.current[0]?.focus(), 100);
-    } catch (err) {
-      setError(err.message || "Failed to send mobile verification code.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle OTP digit input
-  const handleDigitChange = (index, value) => {
-    const val = value.replace(/\D/g, "").slice(-1);
-    const newDigits = [...otpDigits];
-    newDigits[index] = val;
-    setOtpDigits(newDigits);
-
-    if (val && index < 5) {
-      digitRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      digitRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (!pasted) return;
-
-    const newDigits = [...otpDigits];
-    for (let i = 0; i < 6; i++) {
-      newDigits[i] = pasted[i] || "";
-    }
-    setOtpDigits(newDigits);
-    const nextIdx = Math.min(pasted.length, 5);
-    digitRefs.current[nextIdx]?.focus();
-  };
-
-  // Resend OTP
-  const handleResendOtp = async () => {
-    if (resendTimer > 0) return;
-    setOtpLoading(true);
-    setOtpError("");
-
-    try {
-      const res = await apiFetch("/auth/send-otp", {
-        method: "POST",
-        body: JSON.stringify({ phone }),
-      }).catch(() => {
-        const mock = Math.floor(100000 + Math.random() * 900000).toString();
-        return { success: true, demoOtp: mock };
-      });
-
-      if (res.demoOtp) setDemoOtp(res.demoOtp);
-      setResendTimer(30);
-    } catch (err) {
-      setOtpError(err.message || "Could not resend OTP. Try again later.");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // Step 2: Verify OTP and complete Registration (Pending Admin Approval)
-  const handleVerifyAndComplete = async (e) => {
-    e?.preventDefault();
-    const enteredCode = otpDigits.join("");
-    if (enteredCode.length !== 6) {
-      setOtpError("Please enter the complete 6-digit OTP.");
-      return;
-    }
-
-    setOtpLoading(true);
-    setOtpError("");
-
-    try {
-      // 1. Verify OTP with backend or demo match
-      let verifiedToken = "verified_" + Date.now();
-      try {
-        const otpRes = await apiFetch("/auth/verify-otp", {
-          method: "POST",
-          body: JSON.stringify({ phone, otp: enteredCode }),
-        });
-        if (otpRes.verificationToken) {
-          verifiedToken = otpRes.verificationToken;
-        }
-      } catch (err) {
-        if (demoOtp && enteredCode !== demoOtp) {
-          throw new Error("Invalid verification code. Please check and re-enter.");
-        }
-      }
-
-      // 2. Register user in central store as PENDING ADMIN APPROVAL
+      // 1. Register user in central store as PENDING ADMIN APPROVAL
       try {
         registerPendingUser({
           name: name.trim(),
@@ -253,13 +108,12 @@ function Register() {
           role,
         });
       } catch (storeErr) {
-        // If already exists, notify user
         if (storeErr.message?.includes("already exists")) {
           throw storeErr;
         }
       }
 
-      // 3. Sync to backend API if available
+      // 2. Sync to backend API if available
       apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
@@ -268,16 +122,14 @@ function Register() {
           phone: phone.trim(),
           password,
           role,
-          verificationToken: verifiedToken,
         }),
       }).catch((e) => console.log("Backend register sync notice:", e.message));
 
-      setIsOtpModalOpen(false);
       setIsSubmittedForApproval(true);
     } catch (err) {
-      setOtpError(err.message || "Registration failed. Please verify credentials.");
+      setError(err.message || "Registration failed. Please verify credentials.");
     } finally {
-      setOtpLoading(false);
+      setLoading(false);
     }
   };
 
@@ -392,7 +244,7 @@ function Register() {
               </div>
             )}
 
-        <form className="auth-form" onSubmit={handleInitiateRegister}>
+        <form className="auth-form" onSubmit={handleRegister}>
           {/* FULL NAME */}
           <div className="auth-field">
             <div className="auth-label-row">
@@ -432,7 +284,7 @@ function Register() {
           <div className="auth-field">
             <div className="auth-label-row">
               <label>Mobile Number</label>
-              <span className="auth-field-hint">Receives OTP</span>
+              <span className="auth-field-hint">10 digits</span>
             </div>
             <div className="auth-input-wrapper">
               <Phone size={16} className="auth-input-icon" />
@@ -498,11 +350,11 @@ function Register() {
             {loading ? (
               <>
                 <Loader2 size={16} className="spinner" />
-                Validating...
+                Submitting Registration...
               </>
             ) : (
               <>
-                Continue with Mobile OTP
+                Create Account & Request Approval
                 <ArrowRight size={16} />
               </>
             )}
@@ -515,102 +367,6 @@ function Register() {
           </>
         )}
       </div>
-
-      {/* =========================================================
-          MOBILE OTP VERIFICATION MODAL
-          ========================================================= */}
-      {isOtpModalOpen && (
-        <div className="otp-overlay">
-          <div className="otp-modal">
-            <button
-              type="button"
-              className="otp-modal-close"
-              onClick={() => setIsOtpModalOpen(false)}
-              aria-label="Close modal"
-            >
-              <X size={16} />
-            </button>
-
-            <div className="otp-icon-wrap">
-              <Smartphone size={26} />
-            </div>
-
-            <h2>Verify Mobile Number</h2>
-            <p>
-              We've dispatched a 6-digit authentication OTP to{" "}
-              <span className="otp-phone-highlight">{phone}</span>.
-            </p>
-
-            {/* DEMO CODE DISPLAY BANNER */}
-            {demoOtp && (
-              <div className="otp-demo-dispatch">
-                <span>⚡ Test SMS Code:</span>
-                <span className="otp-demo-code">{demoOtp}</span>
-              </div>
-            )}
-
-            {otpError && (
-              <div className="auth-banner error" style={{ marginBottom: 16 }}>
-                <AlertCircle size={14} style={{ flexShrink: 0 }} />
-                <span>{otpError}</span>
-              </div>
-            )}
-
-            {/* 6-DIGIT PIN INPUTS */}
-            <form onSubmit={handleVerifyAndComplete}>
-              <div className="otp-input-group" onPaste={handlePaste}>
-                {otpDigits.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    ref={(el) => (digitRefs.current[idx] = el)}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleDigitChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="otp-digit-input"
-                    autoFocus={idx === 0}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="submit"
-                className="auth-submit"
-                disabled={otpLoading || otpDigits.join("").length !== 6}
-              >
-                {otpLoading ? (
-                  <>
-                    <Loader2 size={16} className="spinner" />
-                    Verifying OTP...
-                  </>
-                ) : (
-                  <>
-                    Verify & Create Account
-                    <ShieldCheck size={16} />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="otp-resend-row">
-              {resendTimer > 0 ? (
-                <span>Resend code in {resendTimer}s</span>
-              ) : (
-                <button
-                  type="button"
-                  className="otp-resend-btn"
-                  onClick={handleResendOtp}
-                  disabled={otpLoading}
-                >
-                  Resend OTP Code
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
