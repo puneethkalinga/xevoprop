@@ -225,9 +225,6 @@ export default function ProjectDetails() {
                   }}
                   className="project-html5-video"
                 />
-                <div className="project-video-mute-notice">
-                  🔇 Video audio permanently muted (Venture Video Tour)
-                </div>
                 <button
                   className="project-close-video-btn"
                   onClick={() => setShowVideo(false)}
@@ -282,7 +279,7 @@ export default function ProjectDetails() {
                 onClick={() => setShowVideo(true)}
               >
                 <Play size={14} fill="#ffffff" />
-                {project.isVenture ? "▶ Watch Muted Venture Video Tour" : "Watch Video Walkthrough"}
+                {project.isVenture ? "▶ Watch Venture Video Tour" : "Watch Video Walkthrough"}
               </button>
             )}
 
@@ -294,9 +291,9 @@ export default function ProjectDetails() {
                     type="button"
                     className="project-thumb-btn project-thumb-video-launcher"
                     onClick={() => setShowVideo(true)}
-                    title="Play Muted Venture Video"
+                    title="Play Venture Video"
                   >
-                    <span>▶ 🔇 Video</span>
+                    <span>▶ Video</span>
                   </button>
                 )}
                 {allImages.map((thumbUrl, idx) => {

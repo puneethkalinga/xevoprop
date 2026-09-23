@@ -377,7 +377,6 @@ function Projects() {
                               preload="metadata"
                               className="project-card-video"
                             />
-                            <span className="project-video-badge">🔇 Muted Video Tour</span>
                           </div>
                         ) : project.image ? (
                           <img

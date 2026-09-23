@@ -12,8 +12,6 @@ import {
 import {
   LinkedInIcon,
   InstagramIcon,
-  TwitterXIcon,
-  FacebookIcon,
 } from "./SocialIcons";
 import { LogoWordmark } from "./Logo";
 import "./Footer.css";
@@ -125,28 +123,6 @@ function Footer() {
                 className="social-tile"
               >
                 <InstagramIcon size={15} />
-              </a>
-
-              <a
-                href="https://twitter.com/xevotech"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Twitter / X"
-                title="Follow Xevotech on X"
-                className="social-tile"
-              >
-                <TwitterXIcon size={14} />
-              </a>
-
-              <a
-                href="https://www.facebook.com/xevotech/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                title="Follow Xevotech on Facebook"
-                className="social-tile"
-              >
-                <FacebookIcon size={15} />
               </a>
             </div>
           </div>
