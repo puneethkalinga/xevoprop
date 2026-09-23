@@ -48,11 +48,13 @@
 
 .footer-brand-logo-link .brand-official-logo,
 .footer-brand-logo {
-  height: 52px;
+  height: 84px;
   width: auto;
   max-width: 280px;
   object-fit: contain;
   display: block;
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 }
 
 .footer-brand-desc {

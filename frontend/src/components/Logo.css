@@ -9,22 +9,25 @@
   display: block;
   max-width: 100%;
   height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .logo-wordmark:hover .logo-official-horizontal {
-  opacity: 0.92;
+  opacity: 0.95;
+  transform: translateY(-1px);
 }
 
 /* Sizing variants */
 .logo-small .logo-official-horizontal {
-  height: 36px !important;
+  height: 38px !important;
 }
 
 .logo-default .logo-official-horizontal {
-  height: 48px !important;
+  height: 50px !important;
 }
 
 .logo-large .logo-official-horizontal {
-  height: 58px !important;
+  height: 62px !important;
 }
