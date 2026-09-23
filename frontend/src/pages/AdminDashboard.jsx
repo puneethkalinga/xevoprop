@@ -31,6 +31,14 @@ import {
   CheckSquare,
   Video,
   Play,
+  Home,
+  BedDouble,
+  Bath,
+  Maximize,
+  MapPin,
+  IndianRupee,
+  BellRing,
+  CheckCheck,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -45,6 +53,11 @@ import {
   approveProjectSubmission,
   rejectProjectSubmission,
   getStoredNotifications,
+  getStoredPropertySubmissions,
+  approvePropertyListing,
+  rejectPropertyListing,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
 } from "../lib/adminStore";
 import { vilvaProjects } from "../data/vilvaProjects";
 import { sbInfraVentures } from "../data/sbInfraProjects";
@@ -57,11 +70,14 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [accessLogs, setAccessLogs] = useState([]);
   const [projectSubmissions, setProjectSubmissions] = useState([]);
+  const [propertySubmissions, setPropertySubmissions] = useState([]);
   const [adminNotifications, setAdminNotifications] = useState([]);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("approvals"); // "approvals" | "submissions" | "audit" | "content"
+  const [activeTab, setActiveTab] = useState("approvals"); // "approvals" | "properties" | "submissions" | "audit" | "content"
   const [userFilter, setUserFilter] = useState("pending"); // "all" | "pending" | "approved" | "rejected" | "developer"
   const [projectFilter, setProjectFilter] = useState("pending"); // "all" | "pending" | "approved" | "rejected"
+  const [propertyFilter, setPropertyFilter] = useState("pending"); // "all" | "pending" | "approved" | "rejected"
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState("");
 
@@ -77,10 +93,12 @@ export default function AdminDashboard() {
     const loadedUsers = getStoredUsers();
     const loadedLogs = getStoredAccessLogs();
     const loadedSubmissions = getStoredProjectSubmissions();
+    const loadedProperties = getStoredPropertySubmissions();
     const loadedNotifications = getStoredNotifications();
     setUsers(loadedUsers);
     setAccessLogs(loadedLogs);
     setProjectSubmissions(loadedSubmissions);
+    setPropertySubmissions(loadedProperties);
     setAdminNotifications(loadedNotifications);
   };
 
@@ -136,6 +154,73 @@ export default function AdminDashboard() {
     }
   };
 
+  // Property listing actions
+  const handleApproveProperty = (propertyId) => {
+    try {
+      const updated = approvePropertyListing(propertyId, user?.name || "Xevoproptech Admin");
+      // Sync to backend if available
+      const token = localStorage.getItem("token");
+      if (token && !String(propertyId).startsWith("prop_sub_")) {
+        fetch(`https://xevoprop.onrender.com/api/admin/properties/${propertyId}/approve`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch((e) => console.log("Backend property approve notice:", e.message));
+      }
+      loadData();
+      showNotification(`✅ Approved property "${updated.title}". Property listing is now live!`);
+    } catch (err) {
+      alert("Error approving property: " + err.message);
+    }
+  };
+
+  const handleRejectProperty = (propertyId) => {
+    const reason = window.prompt("Reason for rejecting or requesting revision:", "Incomplete property specifications or image verification needed");
+    if (reason === null) return;
+    try {
+      const updated = rejectPropertyListing(propertyId, reason, user?.name || "Xevoproptech Admin");
+      const token = localStorage.getItem("token");
+      if (token && !String(propertyId).startsWith("prop_sub_")) {
+        fetch(`https://xevoprop.onrender.com/api/admin/properties/${propertyId}/reject`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ reason }),
+        }).catch((e) => console.log("Backend property reject notice:", e.message));
+      }
+      loadData();
+      showNotification(`❌ Property "${updated.title}" marked for revision.`);
+    } catch (err) {
+      alert("Error rejecting property: " + err.message);
+    }
+  };
+
+  const handleMarkAllNotificationsRead = () => {
+    markAllNotificationsAsRead();
+    setAdminNotifications(getStoredNotifications());
+  };
+
+  const handleNotificationClick = (notif) => {
+    markNotificationAsRead(notif.id);
+    setAdminNotifications(getStoredNotifications());
+    setIsNotifOpen(false);
+
+    if (notif.type === "property_submission" || notif.type === "property_approved" || notif.type === "property_rejected") {
+      setActiveTab("properties");
+      setPropertyFilter("all");
+    } else if (notif.type === "agreement_submission" || notif.type === "project_approved" || notif.type === "project_rejected") {
+      setActiveTab("submissions");
+      setProjectFilter("all");
+    } else if (notif.type === "user_registration") {
+      setActiveTab("approvals");
+      setUserFilter("pending");
+    }
+  };
+
   const handleDownloadSignedDoc = (agreement) => {
     const a = document.createElement("a");
     a.href = agreement?.fileDataUrl || "/documents/Builder_Listing_Commission_Agreementfinal.docx";
@@ -156,6 +241,8 @@ export default function AdminDashboard() {
   const developerCount = users.filter((u) => u.role === "Developer" || u.role === "Builder").length;
   const totalLogsCount = accessLogs.length;
   const pendingProjectsCount = projectSubmissions.filter((p) => p.status === "pending_approval").length;
+  const pendingPropertiesCount = propertySubmissions.filter((p) => p.status === "pending_approval" || p.status === "pending").length;
+  const unreadNotifsCount = adminNotifications.filter((n) => !n.read_at).length;
 
   // Filtered users
   const filteredUsers = users.filter((u) => {
@@ -196,6 +283,24 @@ export default function AdminDashboard() {
     return true;
   });
 
+  // Filtered property submissions
+  const filteredProperties = propertySubmissions.filter((p) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        p.title?.toLowerCase().includes(q) ||
+        p.submitterName?.toLowerCase().includes(q) ||
+        p.location?.toLowerCase().includes(q) ||
+        p.city?.toLowerCase().includes(q) ||
+        p.type?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    if (propertyFilter === "pending") return p.status === "pending_approval" || p.status === "pending";
+    if (propertyFilter === "approved") return p.status === "approved";
+    if (propertyFilter === "rejected") return p.status === "rejected";
+    return true;
+  });
+
   return (
     <div className="admin-page">
       {/* ADMIN HEADER */}
@@ -215,6 +320,88 @@ export default function AdminDashboard() {
           </div>
 
           <div className="admin-user-col">
+            {/* NOTIFICATION CENTER BELL & DROPDOWN */}
+            <div className="admin-notif-btn-wrapper">
+              <button
+                type="button"
+                className={`admin-notif-bell-btn ${isNotifOpen ? "active" : ""}`}
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                aria-label="Admin Notifications"
+                title={`Admin Notifications (${unreadNotifsCount} unread)`}
+              >
+                <Bell size={18} />
+                {unreadNotifsCount > 0 && (
+                  <span className="admin-notif-badge">{unreadNotifsCount}</span>
+                )}
+              </button>
+
+              {isNotifOpen && (
+                <div className="admin-notif-dropdown">
+                  <div className="admin-notif-header">
+                    <div className="admin-notif-title">
+                      <BellRing size={16} color="#1d4ed8" />
+                      <strong>Action Center</strong>
+                      {unreadNotifsCount > 0 && (
+                        <span className="admin-notif-count-pill">{unreadNotifsCount} new</span>
+                      )}
+                    </div>
+                    {adminNotifications.length > 0 && (
+                      <button
+                        type="button"
+                        className="admin-notif-mark-all"
+                        onClick={handleMarkAllNotificationsRead}
+                      >
+                        <CheckCheck size={13} style={{ marginRight: 4 }} />
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="admin-notif-list">
+                    {adminNotifications.length === 0 ? (
+                      <div className="admin-notif-empty">No notifications yet</div>
+                    ) : (
+                      adminNotifications.slice(0, 15).map((notif) => {
+                        const isUnread = !notif.read_at;
+                        return (
+                          <div
+                            key={notif.id}
+                            className={`admin-notif-item ${isUnread ? "is-unread" : ""}`}
+                            onClick={() => handleNotificationClick(notif)}
+                          >
+                            <div className={`admin-notif-icon-col ${notif.type}`}>
+                              {notif.type === "property_submission" || notif.type === "property_approved" ? (
+                                <Home size={16} />
+                              ) : notif.type === "user_registration" ? (
+                                <Users size={16} />
+                              ) : (
+                                <FileText size={16} />
+                              )}
+                            </div>
+                            <div className="admin-notif-content-col">
+                              <div className="admin-notif-item-title">
+                                <strong>{notif.title}</strong>
+                                <span className="admin-notif-item-time">
+                                  {new Date(notif.created_at).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </div>
+                              <p className="admin-notif-item-msg">{notif.message}</p>
+                              <span className="admin-notif-jump-pill">
+                                Review & Approve →
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="admin-profile-pill">
               <div className="admin-avatar">
                 <ShieldCheck size={18} color="#1d4ed8" />
@@ -256,6 +443,24 @@ export default function AdminDashboard() {
                 {pendingCount > 0 && <span className="kpi-tag alert">Action Required</span>}
               </div>
               <p className="kpi-sub">Accounts awaiting verification before login access</p>
+            </div>
+          </div>
+
+          <div className="admin-kpi-card pending-kpi">
+            <div className="kpi-icon-wrap" style={{ background: "#ecfdf5", color: "#059669" }}>
+              <Home size={22} />
+            </div>
+            <div>
+              <span className="kpi-label">PENDING PROPERTY LISTINGS</span>
+              <div className="kpi-value-row">
+                <span className="kpi-number">{pendingPropertiesCount}</span>
+                {pendingPropertiesCount > 0 ? (
+                  <span className="kpi-tag alert">Action Required</span>
+                ) : (
+                  <span className="kpi-tag success">All Reviewed</span>
+                )}
+              </div>
+              <p className="kpi-sub">Sellers & developer properties awaiting admin verification</p>
             </div>
           </div>
 
@@ -315,6 +520,15 @@ export default function AdminDashboard() {
             <Users size={16} />
             Account Approvals & Users
             {pendingCount > 0 && <span className="tab-counter-badge">{pendingCount}</span>}
+          </button>
+
+          <button
+            className={`admin-tab-btn ${activeTab === "properties" ? "active" : ""}`}
+            onClick={() => setActiveTab("properties")}
+          >
+            <Home size={16} />
+            Property Listings & Approvals
+            {pendingPropertiesCount > 0 && <span className="tab-counter-badge">{pendingPropertiesCount}</span>}
           </button>
 
           <button
@@ -527,6 +741,305 @@ export default function AdminDashboard() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* TAB: PROPERTY LISTINGS & APPROVALS */}
+        {activeTab === "properties" && (
+          <section className="admin-content-section">
+            {/* ALERT NOTIFICATION BANNER */}
+            {pendingPropertiesCount > 0 && (
+              <div className="admin-submission-alert-banner">
+                <Bell size={20} className="alert-bell-icon" />
+                <div className="alert-banner-content">
+                  <strong>
+                    {pendingPropertiesCount} Property Listing{pendingPropertiesCount > 1 ? "s" : ""} Awaiting Verification
+                  </strong>
+                  <p>
+                    Sellers and developers have uploaded property listings with media and pricing details.
+                    Review the property details, inspect uploaded photos & video walkthroughs, and authorize publication.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* TOOLBAR */}
+            <div className="admin-section-toolbar">
+              <div className="admin-search-box">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search by title, seller, city or location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button className="clear-search-btn" onClick={() => setSearchQuery("")}>
+                    ×
+                  </button>
+                )}
+              </div>
+
+              <div className="admin-filter-tabs">
+                {[
+                  { key: "all", label: "All Properties", count: propertySubmissions.length },
+                  { key: "pending", label: "Awaiting Approval", count: pendingPropertiesCount },
+                  { key: "approved", label: "Approved & Live", count: propertySubmissions.filter((p) => p.status === "approved").length },
+                  { key: "rejected", label: "Revision Requested", count: propertySubmissions.filter((p) => p.status === "rejected").length },
+                ].map((f) => (
+                  <button
+                    key={f.key}
+                    className={`admin-filter-btn ${propertyFilter === f.key ? "active" : ""}`}
+                    onClick={() => setPropertyFilter(f.key)}
+                  >
+                    {f.label}
+                    <span className="filter-count-pill">{f.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* PROPERTY LISTINGS */}
+            {filteredProperties.length === 0 ? (
+              <div className="admin-empty-state">
+                <Home size={42} className="empty-state-icon" />
+                <h3>No property listings found</h3>
+                <p>No property listings match the selected filter or search query.</p>
+              </div>
+            ) : (
+              <div className="admin-submissions-list">
+                {filteredProperties.map((prop) => {
+                  const isPending = prop.status === "pending_approval" || prop.status === "pending";
+                  const isApproved = prop.status === "approved";
+                  const isRejected = prop.status === "rejected";
+
+                  return (
+                    <div
+                      key={prop.id}
+                      className={`admin-submission-card ${isPending ? "is-pending" : ""}`}
+                    >
+                      {/* CARD HEADER */}
+                      <div className="submission-card-header">
+                        <div className="sub-header-left">
+                          <div className="builder-avatar">
+                            {(prop.submitterName || "S").charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <strong className="sub-builder-name">{prop.submitterName}</strong>
+                              <span className="builder-company-pill">{prop.submitterRole || "Seller"}</span>
+                            </div>
+                            <div className="sub-builder-contact">
+                              {prop.submitterEmail && (
+                                <span>
+                                  <Mail size={12} /> {prop.submitterEmail}
+                                </span>
+                              )}
+                              {prop.submitterPhone && (
+                                <span>
+                                  <Phone size={12} /> {prop.submitterPhone}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="sub-header-right">
+                          <span className="sub-date">
+                            <Clock size={13} />
+                            {new Date(prop.submittedAt || Date.now()).toLocaleString("en-IN", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })}
+                          </span>
+                          {isPending && (
+                            <span className="sub-status-pill pending">
+                              <Clock size={12} />
+                              Awaiting Review
+                            </span>
+                          )}
+                          {isApproved && (
+                            <span className="sub-status-pill approved">
+                              <CheckCircle2 size={12} />
+                              Live on Platform
+                            </span>
+                          )}
+                          {isRejected && (
+                            <span className="sub-status-pill rejected">
+                              <XCircle size={12} />
+                              Revision Requested
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CARD BODY */}
+                      <div className="submission-card-body">
+                        {/* LEFT: SPECS */}
+                        <div className="sub-details-col">
+                          <div className="sub-project-title-row">
+                            <h3>{prop.title}</h3>
+                            {prop.price && (
+                              <span className="sub-price-tag">
+                                <IndianRupee size={15} />
+                                {prop.price}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="sub-meta-badges">
+                            <span className="meta-badge type">{prop.type}</span>
+                            <span className="meta-badge">{prop.usage_type || "Investment"}</span>
+                            <span className="meta-badge location">
+                              <MapPin size={12} />
+                              {prop.location}, {prop.city}
+                            </span>
+                          </div>
+
+                          {/* SPECS ROW */}
+                          <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
+                            {prop.bedrooms && (
+                              <span style={{ fontSize: "13px", fontWeight: "600", color: "#334155", display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                                <BedDouble size={15} color="#2563eb" /> {prop.bedrooms} BHK
+                              </span>
+                            )}
+                            {prop.bathrooms && (
+                              <span style={{ fontSize: "13px", fontWeight: "600", color: "#334155", display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                                <Bath size={15} color="#2563eb" /> {prop.bathrooms} Baths
+                              </span>
+                            )}
+                            {prop.area && (
+                              <span style={{ fontSize: "13px", fontWeight: "600", color: "#334155", display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                                <Maximize size={15} color="#2563eb" /> {prop.area} sq.ft
+                              </span>
+                            )}
+                          </div>
+
+                          {prop.description && (
+                            <p className="sub-description">{prop.description}</p>
+                          )}
+                        </div>
+
+                        {/* RIGHT: MEDIA GALLERY (PHOTOS & VIDEOS) */}
+                        <div className="sub-media-col">
+                          <div className="media-section-title">
+                            <span>
+                              📷 Uploaded Property Media ({prop.images?.length || (prop.image ? 1 : 0)})
+                            </span>
+                          </div>
+
+                          <div className="sub-media-grid">
+                            {prop.images && prop.images.length > 0 ? (
+                              prop.images.map((media, idx) => {
+                                const isVid = media.type === "video" || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(media.url || media.name || "");
+                                return (
+                                  <div key={idx} className="sub-media-thumb-wrap">
+                                    {isVid ? (
+                                      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                                        <video
+                                          src={media.url}
+                                          controls
+                                          playsInline
+                                          preload="metadata"
+                                          style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            objectFit: "cover",
+                                            borderRadius: "8px",
+                                          }}
+                                        />
+                                        <span className="media-type-badge video">
+                                          <Video size={10} /> Video
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <img src={media.url} alt={media.name || "Property Photo"} />
+                                        <span className="media-type-badge photo">Photo</span>
+                                      </>
+                                    )}
+                                  </div>
+                                );
+                              })
+                            ) : prop.image ? (
+                              <div className="sub-media-thumb-wrap">
+                                <img src={prop.image} alt={prop.title} />
+                                <span className="media-type-badge photo">Photo</span>
+                              </div>
+                            ) : (
+                              <div className="no-media-placeholder">No images attached</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CARD FOOTER */}
+                      <div className="submission-card-footer">
+                        <div className="sub-footer-meta">
+                          {isApproved && (
+                            <span className="review-meta">
+                              ✅ Approved by <strong>{prop.reviewedBy || "Admin"}</strong> on{" "}
+                              {new Date(prop.reviewedAt || Date.now()).toLocaleDateString("en-IN")}
+                            </span>
+                          )}
+                          {isRejected && (
+                            <span className="rejection-note">
+                              ❌ Revision requested: "{prop.rejectionReason}"
+                            </span>
+                          )}
+                          {isPending && (
+                            <span style={{ color: "#d97706", fontWeight: "600" }}>
+                              ⚠️ Approval required to publish this listing live to public buyers.
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="sub-footer-actions">
+                          {isPending && (
+                            <>
+                              <button
+                                type="button"
+                                className="btn-approve-project"
+                                onClick={() => handleApproveProperty(prop.id)}
+                              >
+                                <CheckCircle2 size={16} />
+                                Approve Property Listing
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-reject-project"
+                                onClick={() => handleRejectProperty(prop.id)}
+                              >
+                                <XCircle size={16} />
+                                Request Revision / Reject
+                              </button>
+                            </>
+                          )}
+                          {isApproved && (
+                            <button
+                              type="button"
+                              className="btn-reject-project"
+                              onClick={() => handleRejectProperty(prop.id)}
+                            >
+                              Suspend Listing
+                            </button>
+                          )}
+                          {isRejected && (
+                            <button
+                              type="button"
+                              className="btn-approve-project"
+                              onClick={() => handleApproveProperty(prop.id)}
+                            >
+                              Re-Approve Listing
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </section>

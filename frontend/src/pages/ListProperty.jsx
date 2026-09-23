@@ -20,10 +20,13 @@ import {
   PROPERTY_TYPES,
   BUDGET_PRESETS,
 } from "../data/locationAndTypes";
+import { useAuth } from "../context/AuthContext";
+import { submitPropertyListing } from "../lib/adminStore";
 import "./ListProperty.css";
 
 function ListProperty() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [step, setStep] = useState(1);
 
@@ -425,16 +428,49 @@ function ListProperty() {
       }
 
       /* =========================
+         NOTIFY ADMIN & SAVE SUBMISSION
+      ========================= */
+      try {
+        submitPropertyListing({
+          id: propertyId ? String(propertyId) : undefined,
+          title: form.title,
+          type: form.type,
+          usage_type: form.usage_type,
+          state: form.state,
+          city: form.city,
+          location: form.location,
+          price: form.price,
+          price_value: form.price_value,
+          bedrooms: form.bedrooms,
+          bathrooms: form.bathrooms,
+          area: form.area,
+          description: form.description,
+          verified: form.verified,
+          ready_to_move: form.ready_to_move,
+          zero_brokerage: form.zero_brokerage,
+          images: selectedImages,
+          submitter: user || {
+            name: "Registered Seller",
+            role: "Seller",
+            email: "seller@xevoprop.com",
+            phone: "+91 94821 73650",
+          },
+        });
+      } catch (storeError) {
+        console.warn("Local adminStore submission notice:", storeError);
+      }
+
+      /* =========================
          SUCCESS
       ========================= */
 
       setSubmitSuccess(
-        "Property and images uploaded successfully!"
+        "Property and media submitted successfully! Awaiting Master Admin approval before going live."
       );
 
       setTimeout(() => {
         navigate("/properties");
-      }, 1200);
+      }, 1500);
 
     } catch (error) {
       console.error(

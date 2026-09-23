@@ -261,6 +261,15 @@ export function registerPendingUser({ name, email, phone, role, password, compan
     action: `New Account Created (${role}) - Awaiting Admin Approval`,
   });
 
+  // Notify Admin of new registration
+  addAdminNotification({
+    title: "New Account Registration Submitted",
+    message: `${newUser.name} (${newUser.role}) has submitted their account details (${newUser.email || newUser.phone}). Awaiting your verification & approval.`,
+    type: "user_registration",
+    reference_id: newUser.id,
+    builderName: newUser.name,
+  });
+
   return newUser;
 }
 
@@ -579,6 +588,213 @@ export function addAdminNotification({ title, message, type = "system", referenc
     console.error("Failed to save notification:", err);
   }
   return newNotif;
+}
+
+export function markNotificationAsRead(notifId) {
+  const notifs = getStoredNotifications();
+  const notif = notifs.find((n) => n.id === notifId);
+  if (notif) {
+    notif.read_at = new Date().toISOString();
+    try {
+      localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(notifs));
+    } catch (err) {
+      console.error("Failed to update notification:", err);
+    }
+  }
+  return notifs;
+}
+
+export function markAllNotificationsAsRead() {
+  const notifs = getStoredNotifications();
+  const now = new Date().toISOString();
+  const updated = notifs.map((n) => ({ ...n, read_at: n.read_at || now }));
+  try {
+    localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(updated));
+  } catch (err) {
+    console.error("Failed to mark all notifications read:", err);
+  }
+  return updated;
+}
+
+/* ==========================================================================
+   PROPERTY SUBMISSIONS & APPROVALS STORE
+   ========================================================================== */
+
+const PROPERTIES_SUBMISSION_STORAGE_KEY = "xevoprop_property_submissions";
+
+export function getStoredPropertySubmissions() {
+  try {
+    const raw = localStorage.getItem(PROPERTIES_SUBMISSION_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(PROPERTIES_SUBMISSION_STORAGE_KEY, JSON.stringify([]));
+      return [];
+    }
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+export function saveStoredPropertySubmissions(submissions) {
+  try {
+    localStorage.setItem(PROPERTIES_SUBMISSION_STORAGE_KEY, JSON.stringify(submissions));
+  } catch (err) {
+    console.error("Failed to save property submissions:", err);
+  }
+}
+
+export function submitPropertyListing({
+  id,
+  title,
+  type = "Apartment",
+  usage_type = "Investment",
+  location = "",
+  city = "Hyderabad",
+  state = "Telangana",
+  price = "",
+  price_value = null,
+  bedrooms = null,
+  bathrooms = null,
+  area = null,
+  description = "",
+  verified = true,
+  ready_to_move = true,
+  zero_brokerage = false,
+  images = [],
+  submitter = null,
+}) {
+  const submissions = getStoredPropertySubmissions();
+  const propertyId = id || "prop_sub_" + Date.now();
+
+  const formattedImages = (images || []).map((img, i) => {
+    const isVideo =
+      img.type === "video" ||
+      img.file?.type?.startsWith("video/") ||
+      /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(img.name || img.file?.name || img.url || img.preview || "");
+    return {
+      id: img.id || "prop_media_" + i,
+      url: img.preview || img.url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+      name: img.file?.name || img.name || (isVideo ? `Property_Video_${i + 1}.mp4` : `Property_Photo_${i + 1}.jpg`),
+      type: isVideo ? "video" : "image",
+      sizeFormatted: img.sizeFormatted || (img.size ? (img.size / (1024 * 1024)).toFixed(1) + " MB" : null),
+    };
+  });
+
+  const mainImage =
+    formattedImages.find((m) => m.type === "image")?.url ||
+    formattedImages[0]?.url ||
+    "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80";
+
+  const newProperty = {
+    id: propertyId,
+    title: (title || "").trim(),
+    type: type || "Apartment",
+    usage_type: usage_type || "Investment",
+    location: (location || "").trim(),
+    city: city || "Hyderabad",
+    state: state || "Telangana",
+    price: price || "",
+    price_value: price_value ? Number(price_value) : null,
+    bedrooms: bedrooms ? Number(bedrooms) : null,
+    bathrooms: bathrooms ? Number(bathrooms) : null,
+    area: area ? Number(area) : null,
+    description: (description || "").trim(),
+    image: mainImage,
+    images: formattedImages,
+    verified: !!verified,
+    ready_to_move: !!ready_to_move,
+    zero_brokerage: !!zero_brokerage,
+    submitterId: submitter?.id || Date.now(),
+    submitterName: submitter?.name || "Property Seller",
+    submitterEmail: submitter?.email || "seller@xevoprop.com",
+    submitterPhone: submitter?.phone || "",
+    submitterRole: submitter?.role || "Seller",
+    status: "pending_approval",
+    submittedAt: new Date().toISOString(),
+    reviewedAt: null,
+    reviewedBy: null,
+    rejectionReason: null,
+  };
+
+  const updated = [newProperty, ...submissions];
+  saveStoredPropertySubmissions(updated);
+
+  // 1. Audit log
+  recordAccessLog({
+    user: submitter,
+    status: "BLOCKED_PENDING",
+    action: `Property Listing Uploaded: "${newProperty.title}" in ${newProperty.city} by ${newProperty.submitterName} — Awaiting Admin Approval`,
+  });
+
+  // 2. High-priority notification for Admin
+  addAdminNotification({
+    title: "New Property Listing Uploaded",
+    message: `${newProperty.submitterName} (${newProperty.submitterRole}) uploaded property "${newProperty.title}" in ${newProperty.city}. Awaiting your review & approval.`,
+    type: "property_submission",
+    reference_id: newProperty.id,
+    builderName: newProperty.submitterName,
+    projectName: newProperty.title,
+  });
+
+  return newProperty;
+}
+
+export function approvePropertyListing(propertyId, adminName = "Xevoproptech Admin") {
+  const submissions = getStoredPropertySubmissions();
+  const prop = submissions.find((p) => String(p.id) === String(propertyId));
+  if (!prop) throw new Error("Property listing not found");
+
+  prop.status = "approved";
+  prop.reviewedAt = new Date().toISOString();
+  prop.reviewedBy = adminName;
+  prop.rejectionReason = null;
+
+  saveStoredPropertySubmissions(submissions);
+
+  recordAccessLog({
+    user: { name: adminName, role: "Admin", email: "admin.xevoproptech@gmail.com" },
+    status: "SUCCESS",
+    action: `Admin Approved Property Listing: "${prop.title}" by ${prop.submitterName} — Now Live on Platform!`,
+  });
+
+  addAdminNotification({
+    title: "Property Listing Approved",
+    message: `Your property "${prop.title}" in ${prop.city} has been approved by ${adminName} and is now live for buyers.`,
+    type: "property_approved",
+    reference_id: prop.id,
+    targetUserId: prop.submitterId,
+  });
+
+  return prop;
+}
+
+export function rejectPropertyListing(propertyId, reason = "Incomplete or unverified property details", adminName = "Xevoproptech Admin") {
+  const submissions = getStoredPropertySubmissions();
+  const prop = submissions.find((p) => String(p.id) === String(propertyId));
+  if (!prop) throw new Error("Property listing not found");
+
+  prop.status = "rejected";
+  prop.reviewedAt = new Date().toISOString();
+  prop.reviewedBy = adminName;
+  prop.rejectionReason = reason;
+
+  saveStoredPropertySubmissions(submissions);
+
+  recordAccessLog({
+    user: { name: adminName, role: "Admin", email: "admin.xevoproptech@gmail.com" },
+    status: "FAILED",
+    action: `Admin Rejected Property Listing: "${prop.title}" by ${prop.submitterName} (Reason: ${reason})`,
+  });
+
+  addAdminNotification({
+    title: "Property Revision Requested",
+    message: `Your property "${prop.title}" could not be approved: ${reason}. Please revise and resubmit.`,
+    type: "property_rejected",
+    reference_id: prop.id,
+    targetUserId: prop.submitterId,
+  });
+
+  return prop;
 }
 
 

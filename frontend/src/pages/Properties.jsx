@@ -11,6 +11,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
+import { getStoredPropertySubmissions } from "../lib/adminStore";
 import "./Properties.css";
 
 const API_BASE =
@@ -54,6 +55,29 @@ function Properties() {
       setLoading(true);
       setError("");
 
+      const storedApproved = getStoredPropertySubmissions()
+        .filter((p) => p.status === "approved")
+        .map((p) => ({
+          id: p.id,
+          title: p.title,
+          type: p.type,
+          location: p.location,
+          city: p.city,
+          price: p.price,
+          price_value: p.price_value,
+          bedrooms: p.bedrooms,
+          bathrooms: p.bathrooms,
+          area: p.area,
+          image: p.image || p.images?.[0]?.url,
+          images: p.images || [],
+          description: p.description,
+          verified: p.verified ?? true,
+          ready_to_move: p.ready_to_move ?? true,
+          zero_brokerage: p.zero_brokerage ?? false,
+          status: "approved",
+          created_at: p.submittedAt || new Date().toISOString(),
+        }));
+
       const response = await fetch(`${API_BASE}/properties`, {
         signal: AbortSignal.timeout(6000),
       });
@@ -66,13 +90,37 @@ function Properties() {
         const cleanProperties = data.properties.filter(
           (p) => !LEGACY_IDS.has(Number(p.id))
         );
-        setProperties(cleanProperties);
+        const existingIds = new Set(cleanProperties.map((p) => String(p.id)));
+        const uniqueStored = storedApproved.filter((p) => !existingIds.has(String(p.id)));
+        setProperties([...uniqueStored, ...cleanProperties]);
       } else {
-        setProperties([]);
+        setProperties(storedApproved);
       }
     } catch (err) {
       console.warn("Properties fetch error:", err.message);
-      setProperties([]);
+      const storedApproved = getStoredPropertySubmissions()
+        .filter((p) => p.status === "approved")
+        .map((p) => ({
+          id: p.id,
+          title: p.title,
+          type: p.type,
+          location: p.location,
+          city: p.city,
+          price: p.price,
+          price_value: p.price_value,
+          bedrooms: p.bedrooms,
+          bathrooms: p.bathrooms,
+          area: p.area,
+          image: p.image || p.images?.[0]?.url,
+          images: p.images || [],
+          description: p.description,
+          verified: p.verified ?? true,
+          ready_to_move: p.ready_to_move ?? true,
+          zero_brokerage: p.zero_brokerage ?? false,
+          status: "approved",
+          created_at: p.submittedAt || new Date().toISOString(),
+        }));
+      setProperties(storedApproved);
     } finally {
       setLoading(false);
     }

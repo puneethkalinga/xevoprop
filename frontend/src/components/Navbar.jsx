@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 
 import { LogoWordmark } from "./Logo";
 import { useAuth } from "../context/AuthContext";
+import { getStoredNotifications } from "../lib/adminStore";
 import "./Navbar.css";
 
 function Navbar() {
@@ -17,6 +18,10 @@ function Navbar() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const adminUnreadCount = user?.role === "Admin"
+    ? getStoredNotifications().filter((n) => !n.read_at).length
+    : 0;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -119,8 +124,16 @@ function Navbar() {
             </>
           ) : (
             <div className="nav-auth-group">
-              <Link to="/notifications" className="nav-action-icon-btn" aria-label="Notifications" title="Notifications">
+              <Link
+                to={user.role === "Admin" ? "/admin/dashboard" : "/notifications"}
+                className="nav-action-icon-btn"
+                aria-label="Notifications"
+                title={user.role === "Admin" ? `Admin Notifications (${adminUnreadCount} pending)` : "Notifications"}
+              >
                 <Bell size={18} />
+                {user.role === "Admin" && adminUnreadCount > 0 && (
+                  <span className="nav-notif-dot">{adminUnreadCount}</span>
+                )}
               </Link>
 
               {user.role === "Admin" ? (
