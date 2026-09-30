@@ -7,6 +7,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
+  /* Enforce Light Theme & Disable Browser Auto-Dark Inversion */
+  color-scheme: only light;
+  supported-color-schemes: light;
+
   /* Corporate Brand Color (Classic Navy & Corporate Blue) */
   --primary: #1E40AF;
   --primary-hover: #1D4ED8;
@@ -89,15 +93,17 @@
 }
 
 html {
+  color-scheme: only light;
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
-  background: #FFFFFF;
+  background: #FFFFFF !important;
 }
 
 body {
+  color-scheme: only light;
   margin: 0;
   min-width: 320px;
-  background: var(--bg);
+  background: #FFFFFF !important;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 15px;

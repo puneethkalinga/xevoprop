@@ -4,6 +4,7 @@
    ========================================================= */
 
 .project-details-page {
+  color-scheme: only light;
   min-height: calc(100vh - 76px);
   padding: 38px 40px 90px;
   background:
