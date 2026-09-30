@@ -581,7 +581,12 @@
 
 @media (max-width: 480px) {
   .auth-card {
-    padding: 28px 20px;
+    padding: 24px 18px;
+  }
+
+  .auth-row-2 {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .otp-modal {

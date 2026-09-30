@@ -31,3 +31,9 @@
 .logo-large .logo-official-horizontal {
   height: 62px !important;
 }
+
+@media (max-width: 480px) {
+  .logo-default .logo-official-horizontal {
+    height: 40px !important;
+  }
+}

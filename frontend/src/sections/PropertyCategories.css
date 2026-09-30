@@ -164,7 +164,18 @@
 }
 
 @media (max-width: 640px) {
+  .categories-section {
+    padding: 48px 0;
+  }
+  .categories-container {
+    padding: 0 16px;
+  }
+  .categories-heading {
+    margin-bottom: 28px;
+    gap: 16px;
+  }
   .categories-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }

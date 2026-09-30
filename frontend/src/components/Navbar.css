@@ -330,3 +330,34 @@
     text-decoration: none;
   }
 }
+
+@media (max-width: 640px) {
+  .xevoprop-nav-header {
+    height: 64px;
+  }
+
+  .nav-container {
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .nav-mobile-drawer {
+    padding: 14px 16px 20px;
+  }
+
+  .nav-dashboard-pill {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .nav-avatar-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.85rem;
+  }
+
+  .nav-action-icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+}

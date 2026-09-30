@@ -346,7 +346,22 @@
 }
 
 @media (max-width: 680px) {
+  .featured-v2 {
+    padding: 48px 0;
+  }
+  .featured-v2-container {
+    padding: 0 16px;
+  }
+  .featured-v2-header {
+    margin-bottom: 24px;
+    gap: 16px;
+  }
   .featured-v2-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .card-specs-row {
+    flex-wrap: wrap;
+    gap: 8px 12px;
   }
 }

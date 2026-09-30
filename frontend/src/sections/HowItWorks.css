@@ -195,7 +195,23 @@
   }
   .how-bottom-banner {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
+    align-items: stretch;
+    padding: 20px 16px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .how-section {
+    padding: 48px 0;
+  }
+  .how-container {
+    padding: 0 16px;
+  }
+  .how-header {
+    margin-bottom: 28px;
+  }
+  .how-step-card {
+    padding: 24px 20px;
   }
 }

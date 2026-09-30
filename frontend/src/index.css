@@ -86,6 +86,12 @@
   --transition-base: 0.2s ease-in-out;
 }
 
+@media (max-width: 640px) {
+  :root {
+    --page-padding: 16px;
+  }
+}
+
 *,
 *::before,
 *::after {

@@ -381,3 +381,19 @@
     gap: 14px;
   }
 }
+
+@media (max-width: 480px) {
+  .footer-exact-container {
+    padding: 0 16px;
+  }
+
+  .footer-brand-logo-link .brand-official-logo,
+  .footer-brand-logo {
+    height: 64px;
+  }
+
+  .newsletter-card-exact {
+    padding: 24px 18px;
+    border-radius: 14px;
+  }
+}

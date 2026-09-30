@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   CheckCircle,
   Building,
+  IndianRupee,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./Hero.css";
@@ -151,6 +152,7 @@ function Hero() {
 
             {/* PROPERTY TYPE */}
             <div className="hero-field field-type">
+              <Building2 size={18} className="field-icon" />
               <div className="field-inner">
                 <label>Property Type</label>
                 <div className="select-wrapper">
@@ -173,6 +175,7 @@ function Hero() {
 
             {/* BUDGET */}
             <div className="hero-field field-budget">
+              <IndianRupee size={18} className="field-icon" />
               <div className="field-inner">
                 <label>Budget</label>
                 <div className="select-wrapper">
