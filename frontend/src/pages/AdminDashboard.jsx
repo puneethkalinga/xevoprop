@@ -782,22 +782,31 @@ export default function AdminDashboard() {
                 )}
               </div>
 
-              <div className="admin-filter-tabs">
-                {[
-                  { key: "all", label: "All Properties", count: propertySubmissions.length },
-                  { key: "pending", label: "Awaiting Approval", count: pendingPropertiesCount },
-                  { key: "approved", label: "Approved & Live", count: propertySubmissions.filter((p) => p.status === "approved").length },
-                  { key: "rejected", label: "Revision Requested", count: propertySubmissions.filter((p) => p.status === "rejected").length },
-                ].map((f) => (
-                  <button
-                    key={f.key}
-                    className={`admin-filter-btn ${propertyFilter === f.key ? "active" : ""}`}
-                    onClick={() => setPropertyFilter(f.key)}
-                  >
-                    {f.label}
-                    <span className="filter-count-pill">{f.count}</span>
-                  </button>
-                ))}
+              <div className="admin-filter-pills">
+                <button
+                  className={propertyFilter === "pending" ? "active" : ""}
+                  onClick={() => setPropertyFilter("pending")}
+                >
+                  ⏳ Pending Review ({pendingPropertiesCount})
+                </button>
+                <button
+                  className={propertyFilter === "approved" ? "active" : ""}
+                  onClick={() => setPropertyFilter("approved")}
+                >
+                  ✅ Approved & Live ({propertySubmissions.filter((p) => p.status === "approved").length})
+                </button>
+                <button
+                  className={propertyFilter === "rejected" ? "active" : ""}
+                  onClick={() => setPropertyFilter("rejected")}
+                >
+                  ❌ Revision Required ({propertySubmissions.filter((p) => p.status === "rejected").length})
+                </button>
+                <button
+                  className={propertyFilter === "all" ? "active" : ""}
+                  onClick={() => setPropertyFilter("all")}
+                >
+                  All Properties ({propertySubmissions.length})
+                </button>
               </div>
             </div>
 
