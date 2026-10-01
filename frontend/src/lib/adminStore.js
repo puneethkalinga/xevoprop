@@ -8,8 +8,8 @@ const USERS_STORAGE_KEY = "xevoprop_registered_users";
 const LOGS_STORAGE_KEY = "xevoprop_access_logs";
 
 export const MASTER_ADMIN_CREDENTIALS = {
-  username: "admin.xevoproptech",
-  email: "admin.xevoproptech@gmail.com",
+  username: "xevotechpvt.ltd",
+  email: "xevotechpvt.ltd@gmail.com",
   password: "XEVOPROPTECH@2026",
   name: "Xevoproptech Admin",
   role: "Admin",
@@ -21,9 +21,9 @@ export const MASTER_ADMIN_CREDENTIALS = {
 const INITIAL_USERS = [
   {
     id: 1,
-    username: "admin.xevoproptech",
+    username: "xevotechpvt.ltd",
     name: "Xevoproptech Admin",
-    email: "admin.xevoproptech@gmail.com",
+    email: "xevotechpvt.ltd@gmail.com",
     phone: "",
     role: "Admin",
     company: "Xevoproptech Pvt Ltd",
@@ -67,7 +67,7 @@ const INITIAL_LOGS = [
   {
     id: "log_101",
     userName: "Xevoproptech Admin",
-    userEmail: "admin.xevoproptech@gmail.com",
+    userEmail: "xevotechpvt.ltd@gmail.com",
     userRole: "Admin",
     company: "Xevoproptech Pvt Ltd",
     timestamp: "2026-09-23T00:45:12.000Z",
@@ -331,7 +331,9 @@ export function findUserByCredentials(identifier) {
   // Check Master Admin
   if (
     clean === MASTER_ADMIN_CREDENTIALS.username.toLowerCase() ||
-    clean === MASTER_ADMIN_CREDENTIALS.email.toLowerCase()
+    clean === MASTER_ADMIN_CREDENTIALS.email.toLowerCase() ||
+    clean === "admin.xevoproptech" ||
+    clean === "admin.xevoproptech@gmail.com"
   ) {
     return {
       ...MASTER_ADMIN_CREDENTIALS,
@@ -512,7 +514,7 @@ export function approveProjectSubmission(submissionId, adminName = "Xevoproptech
   saveStoredProjectSubmissions(submissions);
 
   recordAccessLog({
-    user: { name: adminName, role: "Admin", email: "admin.xevoproptech@gmail.com" },
+    user: { name: adminName, role: "Admin", email: "xevotechpvt.ltd@gmail.com" },
     status: "SUCCESS",
     action: `Admin Approved Project & Agreement: "${sub.name}" by ${sub.builderName} (${sub.builderCompany}) — Now Live!`,
   });
@@ -541,7 +543,7 @@ export function rejectProjectSubmission(submissionId, reason = "Information or a
   saveStoredProjectSubmissions(submissions);
 
   recordAccessLog({
-    user: { name: adminName, role: "Admin", email: "admin.xevoproptech@gmail.com" },
+    user: { name: adminName, role: "Admin", email: "xevotechpvt.ltd@gmail.com" },
     status: "FAILED",
     action: `Admin Rejected Project Listing: "${sub.name}" by ${sub.builderName} (Reason: ${reason})`,
   });
@@ -752,7 +754,7 @@ export function approvePropertyListing(propertyId, adminName = "Xevoproptech Adm
   saveStoredPropertySubmissions(submissions);
 
   recordAccessLog({
-    user: { name: adminName, role: "Admin", email: "admin.xevoproptech@gmail.com" },
+    user: { name: adminName, role: "Admin", email: "xevotechpvt.ltd@gmail.com" },
     status: "SUCCESS",
     action: `Admin Approved Property Listing: "${prop.title}" by ${prop.submitterName} — Now Live on Platform!`,
   });

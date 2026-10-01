@@ -1,4 +1,10 @@
 {
+  "name": "xevoprop",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "deploy:google": "npm run build --prefix frontend && npx firebase-tools deploy --only hosting"
+  },
   "dependencies": {
     "backend": "^0.0.0"
   }

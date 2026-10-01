@@ -53,7 +53,7 @@ function Contact() {
             <div className="contact-details">
 
               <a
-                href="mailto:contact@xevoprop.com"
+                href="mailto:xevotechpvt.ltd@gmail.com"
                 className="contact-detail"
               >
                 <div className="contact-detail-icon">
@@ -62,7 +62,7 @@ function Contact() {
 
                 <div>
                   <span>Email</span>
-                  <strong>contact@xevoprop.com</strong>
+                  <strong>xevotechpvt.ltd@gmail.com</strong>
                 </div>
               </a>
 
