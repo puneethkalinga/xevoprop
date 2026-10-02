@@ -71,25 +71,37 @@
 
 /* HERO MARK */
 .about-hero-mark {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  padding: 28px 36px;
+  gap: 12px;
+  padding: 14px 22px;
   background: #FFFFFF;
   border: 1px solid #CBD5E1;
   border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  flex-shrink: 0;
+  align-self: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.about-hero-mark:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.12);
+  border-color: #94A3B8;
 }
 
 .about-hero-mark svg {
   color: #1E40AF;
+  flex-shrink: 0;
 }
 
 .about-hero-mark span {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 800;
   color: #0F172A;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 /* =========================================================
@@ -297,6 +309,11 @@
   .about-hero {
     flex-direction: column;
     align-items: flex-start;
+    gap: 28px;
+    padding: 48px 20px 40px;
+  }
+  .about-hero-mark {
+    align-self: flex-start;
   }
   .about-mission-grid,
   .about-values-grid {

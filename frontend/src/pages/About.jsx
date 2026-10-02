@@ -35,8 +35,8 @@ function About() {
         </div>
 
         <div className="about-hero-mark">
-          <Building2 size={38} />
-          <span>XP</span>
+          <Building2 size={26} />
+          <span>xevoproptech</span>
         </div>
       </section>
 
