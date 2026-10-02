@@ -354,36 +354,6 @@ function Login() {
           </button>
         </form>
 
-        <div style={{ marginTop: "16px", padding: "14px", background: "#f8fafc", border: "1px dashed #cbd5e1", borderRadius: "10px", textAlign: "center" }}>
-          <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 10px", fontWeight: "600" }}>
-            Admin Portal Quick Access
-          </p>
-          <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button
-              type="button"
-              onClick={() => {
-                setIdentifier("admin.xevoproptech");
-                setPassword("XEVOPROPTECH@2026");
-              }}
-              style={{
-                fontSize: "12px",
-                padding: "8px 16px",
-                background: "#eff6ff",
-                border: "1px solid #bfdbfe",
-                borderRadius: "6px",
-                color: "#1d4ed8",
-                cursor: "pointer",
-                fontWeight: "700",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <ShieldCheck size={14} /> Master Admin
-            </button>
-          </div>
-        </div>
-
         <p className="auth-switch">
           Don't have an account yet? <Link to="/register">Create an account</Link>
         </p>
